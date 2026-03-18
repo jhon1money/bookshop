@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>🛒 Carrito de Compras</h2>
+
+{% if books %}
+
+    {% for item in books %}
+        <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:8px; display:flex; gap:20px; align-items:center;">
+
+            <!-- IMAGEN -->
+            {% if item.book.imagen %}
+                {% if 'http' in item.book.imagen %}
+                    <img src="{{ item.book.imagen }}" width="120" style="border-radius:5px;">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/' + item.book.imagen) }}" 
+                         width="120" 
+                         style="border-radius:5px;">
+                {% endif %}
+            {% endif %}
+
+            <!-- INFORMACIÓN -->
+            <div>
+                <h3>{{ item.book.titulo }}</h3>
+                <p><strong>Precio unitario:</strong> ${{ item.book.precio }}</p>
+
+                <p>
+                    <strong>Cantidad:</strong>
+
+                    <a href="{{ url_for('decrease_quantity', book_id=item.book.id) }}" 
+                       style="padding:5px 10px; background:#ddd; text-decoration:none;">➖</a>
+
+                    <strong style="margin:0 10px;">{{ item.quantity }}</strong>
+
+                    <a href="{{ url_for('increase_quantity', book_id=item.book.id) }}" 
+                       style="padding:5px 10px; background:#ddd; text-decoration:none;">➕</a>
+                </p>
+
+                {% if item.quantity > item.book.stock %}
+                    <p style="color:red; font-weight:bold;">
+                        ❌ No hay suficiente stock disponible
+                    </p>
+                {% endif %}
+
+                <p><strong>Subtotal:</strong> ${{ item.subtotal }}</p>
+
+                <a href="{{ url_for('remove_from_cart', book_id=item.book.id) }}" 
+                   style="color:red; text-decoration:none; font-weight:bold;">
+                   🗑 Eliminar producto
+                </a>
+            </div>
+
+        </div>
+    {% endfor %}
+
+    <hr>
+
+    <h3>💰 Total: ${{ total }}</h3>
+
+    <br>
+
+    <a href="{{ url_for('checkout') }}" 
+       style="padding:10px 15px; background:green; color:white; text-decoration:none; border-radius:5px;">
+       ✅ Finalizar compra
+    </a>
+
+{% else %}
+
+    <p>Tu carrito está vacío 🛒</p>
+    <a href="{{ url_for('index') }}">Volver a la tienda</a>
+
+{% endif %}
+
+{% endblock %}

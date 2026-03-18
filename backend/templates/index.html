@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📚 Nuestra Tienda</h2>
+
+<!-- BOTÓN OFERTAS -->
+<a href="/?ofertas=1">
+    <button style="margin-bottom:15px;">🔥 Ver Ofertas</button>
+</a>
+
+<!-- BUSCADOR -->
+<form method="GET" action="/" style="margin-bottom:20px;">
+    
+    <input 
+        type="text" 
+        name="search" 
+        placeholder="Buscar por título o autor"
+        value="{{ request.args.get('search','') }}"
+    >
+
+    <select name="category">
+        <option value="">Todas las categorías</option>
+
+        {% for cat in categories %}
+        <option 
+            value="{{ cat.id }}"
+            {% if request.args.get('category') == cat.id|string %}selected{% endif %}
+        >
+            {{ cat.nombre }}
+        </option>
+        {% endfor %}
+
+    </select>
+
+    <button type="submit">🔍 Buscar</button>
+
+</form>
+
+
+<!-- LISTA DE LIBROS -->
+{% for book in books %}
+<div style="margin-bottom:20px; border:1px solid #ccc; padding:15px; border-radius:8px;">
+
+    <!-- IMAGEN -->
+    {% if book.imagen %}
+        {% if 'http' in book.imagen %}
+            <img src="{{ book.imagen }}" width="120"><br><br>
+        {% else %}
+            <img src="{{ url_for('static', filename='images/' + book.imagen) }}" width="120"><br><br>
+        {% endif %}
+    {% endif %}
+
+    <!-- INFO -->
+    <h3>{{ book.titulo }}</h3>
+
+    <p><strong>Autor:</strong> {{ book.autor }}</p>
+
+    <p>{{ book.descripcion }}</p>
+
+
+    <!-- PRECIO -->
+    {% if book.oferta and book.precio_oferta %}
+
+        {% set descuento = ((book.precio - book.precio_oferta) / book.precio * 100) | round(0) %}
+
+        <p>
+
+        <span style="text-decoration:line-through; color:gray; font-size:14px;">
+        ${{ book.precio }}
+        </span>
+
+        <span style="color:red; font-weight:bold; font-size:20px; margin-left:10px;">
+        ${{ book.precio_oferta }}
+        </span>
+
+        <span style="color:green; font-weight:bold; margin-left:10px;">
+        {{ descuento }}% OFF 🔥
+        </span>
+
+        </p>
+
+    {% else %}
+
+        <p><strong>Precio:</strong> ${{ book.precio }}</p>
+
+    {% endif %}
+
+
+    <!-- CARRITO -->
+    {% if book.stock > 0 %}
+        <form action="{{ url_for('add_to_cart', book_id=book.id) }}" method="POST">
+            <button type="submit">🛒 Agregar al carrito</button>
+        </form>
+
+        <p><strong>📦 Disponibles:</strong> {{ book.stock }}</p>
+
+    {% else %}
+        <p style="color:red; font-weight:bold;">❌ AGOTADO</p>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+
+<!-- MENSAJE SI NO HAY LIBROS -->
+{% if books|length == 0 %}
+<p>No se encontraron libros.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📊 Historial de Ventas</h2>
+<a href="/dashboard">⬅ Volver al Dashboard</a>
+
+{% for order in orders %}
+    <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:8px;">
+
+        <h3>🧾 Pedido #{{ order.id }}</h3>
+
+        <p><strong>Cliente:</strong> {{ order.customer_name }}</p>
+        <p><strong>Teléfono:</strong> {{ order.customer_phone }}</p>
+        <p><strong>Dirección:</strong> {{ order.customer_address }}</p>
+        <p><strong>Fecha:</strong> {{ order.date }}</p>
+
+        <hr>
+
+        <h4>📚 Libros comprados:</h4>
+
+        {% if order.items %}
+            <ul>
+                {% for item in order.items %}
+                    <li>
+                        <strong>{{ item.book.titulo }}</strong><br>
+                        Cantidad: {{ item.quantity }}<br>
+                        Precio unitario: ${{ item.price }}<br>
+                        Subtotal: ${{ item.quantity * item.price }}
+                    </li>
+                    <br>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay detalle de productos (pedido antiguo).</p>
+        {% endif %}
+
+        <hr>
+        <h3>💰 Total: ${{ order.total }}</h3>
+
+    </div>
+{% endfor %}
+
+{% endblock %}
