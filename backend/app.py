@@ -1,368 +1,374 @@
-import os
-from flask import Flask, render_template, redirect, url_for, request, session, jsonify
-from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, login_user, login_required, logout_user
+import datetime
+import jwt
+from functools import wraps
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from werkzeug.security import check_password_hash
+
 from config import Config
 from models import db, Book, Order, OrderItem, Admin, Category
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
-
-app.secret_key = app.config.get("SECRET_KEY", "supersecretkey")
+app.config["JWT_SECRET"] = app.config.get("SECRET_KEY", "supersecretkey")
 
 db.init_app(app)
 
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
+# Permite requests desde tu frontend en Vite
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 # =========================
-# LOGIN MANAGER
+# HELPERS
 # =========================
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(Admin, int(user_id))
-
-
-# =========================
-# HOME
-# =========================
-@app.route("/")
-def index():
-
-    search = request.args.get("search")
-    category = request.args.get("category")
-    ofertas = request.args.get("ofertas")
-
-    query = Book.query
-
-    if search:
-        query = query.filter(
-            (Book.titulo.contains(search)) |
-            (Book.autor.contains(search))
-        )
-
-    if category:
-        query = query.filter(Book.category_id == int(category))
-
-    if ofertas:
-        query = query.filter(Book.oferta == True)
-
-    books = query.all()
-    categories = Category.query.all()
-
-    return render_template(
-        "index.html",
-        books=books,
-        categories=categories
-    )
+def json_response(code, error, message, data=None):
+    response = {
+        "code": code,
+        "error": error,
+        "message": message,
+    }
+    if data is not None:
+        response["data"] = data
+    return jsonify(response), code
 
 
 # =========================
-# API LIBROS
+# JWT FUNCTIONS
 # =========================
-@app.route("/api/books")
-def api_books():
+def generate_token(admin):
+    payload = {
+        "id": admin.id,
+        "username": admin.username,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=3),
+    }
+    return jwt.encode(payload, app.config["JWT_SECRET"], algorithm="HS256")
 
-    search = request.args.get("search")
-    category = request.args.get("category")
-    ofertas = request.args.get("ofertas")
 
-    query = Book.query
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization", "").strip()
 
-    if search:
-        query = query.filter(
-            (Book.titulo.contains(search)) |
-            (Book.autor.contains(search))
-        )
+        if not auth_header:
+            return json_response(401, True, "Token is missing")
 
-    if category:
-        query = query.filter(Book.category_id == int(category))
+        parts = auth_header.split()
 
-    if ofertas:
-        query = query.filter(Book.oferta == True)
+        if len(parts) != 2 or parts[0] != "Bearer":
+            return json_response(401, True, "Invalid authorization format")
 
-    books = query.all()
+        token = parts[1]
 
-    books_data = []
+        try:
+            data = jwt.decode(token, app.config["JWT_SECRET"], algorithms=["HS256"])
+            current_user = db.session.get(Admin, data["id"])
 
-    for book in books:
-        books_data.append({
-            "id": book.id,
-            "titulo": book.titulo,
-            "autor": book.autor,
-            "precio": book.precio,
-            "precio_oferta": book.precio_oferta,
-            "imagen": book.imagen,
-            "oferta": book.oferta,
-            "stock": book.stock
-        })
+            if not current_user:
+                return json_response(401, True, "User not found for this token")
 
-    return jsonify(books_data)
+        except jwt.ExpiredSignatureError:
+            return json_response(401, True, "Token has expired")
+        except jwt.InvalidTokenError:
+            return json_response(401, True, "Token is invalid")
+        except Exception:
+            return json_response(401, True, "Token is invalid")
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 
 # =========================
-# LOGIN
+# AUTH
 # =========================
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
+    try:
+        data = request.get_json() or {}
 
-    if request.method == "POST":
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
 
-        username = request.form["username"]
-        password = request.form["password"]
+        if not username or not password:
+            return json_response(400, True, "Username and password are required")
 
         admin = Admin.query.filter_by(username=username).first()
 
-        if admin and check_password_hash(admin.password, password):
-            login_user(admin)
-            return redirect(url_for("dashboard"))
+        if not admin:
+            return json_response(404, True, "User not found")
 
-    return render_template("login.html")
+        if not check_password_hash(admin.password, password):
+            return json_response(401, True, "Invalid credentials")
 
+        token = generate_token(admin)
 
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("index"))
+        return json_response(
+            200,
+            False,
+            "Login successful",
+            {
+                "token": token,
+                "user": {
+                    "id": admin.id,
+                    "username": admin.username,
+                },
+            },
+        )
 
-
-# =========================
-# DASHBOARD
-# =========================
-@app.route("/dashboard")
-@login_required
-def dashboard():
-
-    books = Book.query.all()
-
-    return render_template(
-        "dashboard.html",
-        books=books
-    )
-
-
-@app.route("/orders")
-@login_required
-def orders():
-
-    orders = Order.query.order_by(Order.date.desc()).all()
-
-    return render_template(
-        "orders.html",
-        orders=orders
-    )
+    except Exception as e:
+        return json_response(500, True, str(e))
 
 
 # =========================
-# CATEGORIAS
+# BOOKS
 # =========================
-@app.route("/add_category", methods=["GET", "POST"])
-@login_required
-def add_category():
+@app.route("/api/books", methods=["GET"])
+def get_books():
+    try:
+        search = request.args.get("search", "").strip()
+        category = request.args.get("category", "").strip()
+        ofertas = request.args.get("ofertas", "").strip().lower()
 
-    if request.method == "POST":
+        query = Book.query
 
-        nombre = request.form["nombre"]
+        if search:
+            query = query.filter(
+                (Book.titulo.contains(search)) |
+                (Book.autor.contains(search))
+            )
 
-        existing = Category.query.filter_by(nombre=nombre).first()
+        if category:
+            if not category.isdigit():
+                return json_response(400, True, "Category must be a valid integer")
+            query = query.filter(Book.category_id == int(category))
 
-        if not existing:
-            category = Category(nombre=nombre)
-            db.session.add(category)
-            db.session.commit()
+        if ofertas in ["true", "1", "yes"]:
+            query = query.filter(Book.oferta.is_(True))
 
-        return redirect(url_for("add_category"))
+        books = query.all()
 
-    categories = Category.query.all()
+        return json_response(
+            200,
+            False,
+            "Books fetched successfully",
+            [
+                {
+                    "id": b.id,
+                    "titulo": b.titulo,
+                    "autor": b.autor,
+                    "precio": b.precio,
+                    "descripcion": b.descripcion,
+                    "precio_oferta": b.precio_oferta,
+                    "imagen": b.imagen,
+                    "oferta": b.oferta,
+                    "stock": b.stock,
+                    "category_id": b.category_id,
+                }
+                for b in books
+            ],
+        )
 
-    return render_template(
-        "add_category.html",
-        categories=categories
-    )
+    except Exception as e:
+        return json_response(500, True, str(e))
 
 
-@app.route("/delete_category/<int:id>", methods=["POST"])
-@login_required
-def delete_category(id):
+@app.route("/api/books", methods=["POST"])
+@token_required
+def add_book(current_user):
+    try:
+        data = request.get_json() or {}
 
-    category = Category.query.get_or_404(id)
+        required_fields = ["titulo", "autor", "precio", "stock"]
+        missing_fields = [field for field in required_fields if field not in data or data[field] in [None, ""]]
 
-    db.session.delete(category)
-    db.session.commit()
+        if missing_fields:
+            return json_response(400, True, f"Missing fields: {', '.join(missing_fields)}")
 
-    return redirect(url_for("add_category"))
-
-
-# =========================
-# LIBROS
-# =========================
-@app.route("/add_book", methods=["GET", "POST"])
-@login_required
-def add_book():
-
-    categories = Category.query.all()
-
-    if request.method == "POST":
-
-        titulo = request.form["titulo"]
-        autor = request.form["autor"]
-        precio = float(request.form["precio"])
-        descripcion = request.form["descripcion"]
-        stock = int(request.form["stock"])
-        category_id = request.form.get("category_id")
-
-        oferta = "oferta" in request.form
-
-        precio_oferta = request.form.get("precio_oferta")
-
-        if precio_oferta:
-            precio_oferta = float(precio_oferta)
-        else:
-            precio_oferta = None
-
-        imagen_url = request.form.get("imagen_url")
-        imagen_file = request.files.get("imagen_file")
-
-        imagen_path = None
-
-        if imagen_file and imagen_file.filename != "":
-            filename = secure_filename(imagen_file.filename)
-            path = os.path.join("static/images", filename)
-            imagen_file.save(path)
-            imagen_path = path
-
-        elif imagen_url:
-            imagen_path = imagen_url
+        category_id = data.get("category_id")
+        if category_id is not None:
+            category = db.session.get(Category, category_id)
+            if not category:
+                return json_response(404, True, "Category not found")
 
         book = Book(
-            titulo=titulo,
-            autor=autor,
-            precio=precio,
-            precio_oferta=precio_oferta,
-            descripcion=descripcion,
-            stock=stock,
-            imagen=imagen_path,
-            oferta=oferta,
-            category_id=int(category_id) if category_id else None
+            titulo=data["titulo"],
+            autor=data["autor"],
+            precio=float(data["precio"]),
+            descripcion=data.get("descripcion"),
+            stock=int(data["stock"]),
+            category_id=category_id,
+            oferta=bool(data.get("oferta", False)),
+            precio_oferta=float(data["precio_oferta"]) if data.get("precio_oferta") not in [None, ""] else None,
+            imagen=data.get("imagen"),
         )
 
         db.session.add(book)
         db.session.commit()
 
-        return redirect(url_for("dashboard"))
+        return json_response(
+            201,
+            False,
+            "Book created",
+            {
+                "id": book.id,
+                "titulo": book.titulo,
+            },
+        )
 
-    return render_template(
-        "add_book.html",
-        categories=categories
-    )
+    except ValueError:
+        return json_response(400, True, "Invalid numeric values for precio, stock, or precio_oferta")
+    except Exception as e:
+        db.session.rollback()
+        return json_response(500, True, str(e))
 
 
-@app.route("/edit_book/<int:id>", methods=["GET", "POST"])
-@login_required
-def edit_book(id):
+@app.route("/api/books/<int:id>", methods=["PUT"])
+@token_required
+def update_book(current_user, id):
+    try:
+        book = Book.query.get_or_404(id)
+        data = request.get_json() or {}
 
-    book = Book.query.get_or_404(id)
+        if "titulo" in data:
+            book.titulo = data["titulo"]
 
-    if request.method == "POST":
+        if "autor" in data:
+            book.autor = data["autor"]
 
-        book.titulo = request.form["titulo"]
-        book.autor = request.form["autor"]
-        book.precio = float(request.form["precio"])
-        book.descripcion = request.form["descripcion"]
-        book.stock = int(request.form["stock"])
+        if "precio" in data:
+            book.precio = float(data["precio"])
+
+        if "descripcion" in data:
+            book.descripcion = data["descripcion"]
+
+        if "stock" in data:
+            book.stock = int(data["stock"])
+
+        if "category_id" in data:
+            category_id = data["category_id"]
+            if category_id is not None:
+                category = db.session.get(Category, category_id)
+                if not category:
+                    return json_response(404, True, "Category not found")
+            book.category_id = category_id
+
+        if "oferta" in data:
+            book.oferta = bool(data["oferta"])
+
+        if "precio_oferta" in data:
+            book.precio_oferta = (
+                float(data["precio_oferta"])
+                if data["precio_oferta"] not in [None, ""]
+                else None
+            )
+
+        if "imagen" in data:
+            book.imagen = data["imagen"]
 
         db.session.commit()
 
-        return redirect(url_for("dashboard"))
+        return json_response(200, False, "Book updated")
 
-    return render_template(
-        "edit_book.html",
-        book=book
-    )
+    except ValueError:
+        return json_response(400, True, "Invalid numeric values for precio, stock, or precio_oferta")
+    except Exception as e:
+        db.session.rollback()
+        return json_response(500, True, str(e))
 
 
-@app.route("/delete_book/<int:id>")
-@login_required
-def delete_book(id):
+@app.route("/api/books/<int:id>", methods=["DELETE"])
+@token_required
+def delete_book(current_user, id):
+    try:
+        book = Book.query.get_or_404(id)
 
-    book = Book.query.get_or_404(id)
+        db.session.delete(book)
+        db.session.commit()
 
-    db.session.delete(book)
-    db.session.commit()
+        return json_response(200, False, "Book deleted")
 
-    return redirect(url_for("dashboard"))
+    except Exception as e:
+        db.session.rollback()
+        return json_response(500, True, str(e))
 
 
 # =========================
-# CARRITO
+# CATEGORIES
 # =========================
-@app.route("/add_to_cart/<int:book_id>", methods=["POST"])
-def add_to_cart(book_id):
+@app.route("/api/categories", methods=["GET"])
+def get_categories():
+    try:
+        categories = Category.query.all()
 
-    book = db.session.get(Book, book_id)
+        return json_response(
+            200,
+            False,
+            "Categories fetched",
+            [
+                {
+                    "id": c.id,
+                    "nombre": c.nombre,
+                }
+                for c in categories
+            ],
+        )
 
-    if not book or book.stock <= 0:
-        return "Producto agotado"
-
-    if "cart" not in session:
-        session["cart"] = {}
-
-    cart = session["cart"]
-
-    quantity = cart.get(str(book_id), 0)
-
-    if quantity + 1 > book.stock:
-        return f"No hay más stock disponible de {book.titulo}"
-
-    cart[str(book_id)] = quantity + 1
-    session["cart"] = cart
-
-    return redirect(url_for("index"))
+    except Exception as e:
+        return json_response(500, True, str(e))
 
 
-@app.route("/cart")
-def cart():
+@app.route("/api/categories", methods=["POST"])
+@token_required
+def add_category(current_user):
+    try:
+        data = request.get_json() or {}
+        nombre = data.get("nombre", "").strip()
 
-    cart = session.get("cart", {})
+        if not nombre:
+            return json_response(400, True, "Category name is required")
 
-    books = []
-    total = 0
+        category = Category(nombre=nombre)
 
-    for book_id, quantity in cart.items():
+        db.session.add(category)
+        db.session.commit()
 
-        book = db.session.get(Book, int(book_id))
+        return json_response(
+            201,
+            False,
+            "Category created",
+            {
+                "id": category.id,
+                "nombre": category.nombre,
+            },
+        )
 
-        if book:
+    except Exception as e:
+        db.session.rollback()
+        return json_response(500, True, str(e))
 
-            price = book.precio_oferta if book.oferta and book.precio_oferta else book.precio
 
-            subtotal = price * quantity
+@app.route("/api/categories/<int:id>", methods=["DELETE"])
+@token_required
+def delete_category(current_user, id):
+    try:
+        category = Category.query.get_or_404(id)
 
-            total += subtotal
+        db.session.delete(category)
+        db.session.commit()
 
-            books.append({
-                "book": book,
-                "quantity": quantity,
-                "subtotal": subtotal
-            })
+        return json_response(200, False, "Category deleted")
 
-    return render_template(
-        "cart.html",
-        books=books,
-        total=total
-    )
+    except Exception as e:
+        db.session.rollback()
+        return json_response(500, True, str(e))
 
 
 # =========================
 # START APP
 # =========================
 if __name__ == "__main__":
-
     with app.app_context():
         db.create_all()
 
