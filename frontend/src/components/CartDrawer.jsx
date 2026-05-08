@@ -56,7 +56,7 @@ function CartDrawer({
       <div className="cart-summary">
         <div className="summary-row">
           <span>Total</span>
-          <strong>${total.toFixed(2)}</strong>
+          <strong>RD$ {total.toFixed(2)}</strong>
         </div>
 
         <button

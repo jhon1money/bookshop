@@ -3,10 +3,10 @@
   flex-direction: column;
   gap: 16px;
   padding: 18px;
-  border-radius: 24px;
-  border: 1px solid rgba(124, 88, 56, 0.12);
-  background: linear-gradient(180deg, #fffdfa 0%, #f4e6d7 100%);
-  box-shadow: 0 18px 40px rgba(82, 54, 31, 0.1);
+  border: 1px solid rgba(31, 61, 43, 0.08);
+  border-radius: 22px;
+  background: #fffdf8;
+  box-shadow: 0 14px 30px rgba(26, 26, 26, 0.04);
   cursor: pointer;
   transition:
     transform 0.28s ease,
@@ -15,13 +15,13 @@
 }
 
 .book-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 46px rgba(82, 54, 31, 0.16);
-  border-color: rgba(124, 88, 56, 0.24);
+  transform: translateY(-4px);
+  border-color: rgba(31, 61, 43, 0.14);
+  box-shadow: 0 18px 34px rgba(26, 26, 26, 0.08);
 }
 
 .book-card:focus-visible {
-  outline: 3px solid rgba(176, 77, 33, 0.35);
+  outline: 3px solid rgba(31, 61, 43, 0.16);
   outline-offset: 3px;
 }
 
@@ -30,13 +30,14 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .book-image-shell {
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
-  background: transparent;
+  border-radius: 18px;
+  background: #f1ece0;
   aspect-ratio: 3 / 4;
   display: flex;
   align-items: center;
@@ -47,25 +48,26 @@
 .stock-pill {
   display: inline-flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .book-badge {
-  background: #352114;
-  color: #fff3e5;
+  background: rgba(178, 30, 30, 0.12);
+  color: #b21e1e;
 }
 
 .stock-pill.in-stock {
-  background: #e3f0df;
-  color: #315b2d;
+  background: rgba(15, 79, 47, 0.14);
+  color: #0f4f2f;
 }
 
 .stock-pill.out-stock {
-  background: #f8dfdb;
-  color: #963d32;
+  background: rgba(107, 107, 107, 0.14);
+  color: #5f5f5f;
 }
 
 .book-image {
@@ -73,81 +75,87 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  border-radius: 22px;
+  border-radius: 18px;
   transition: transform 0.35s ease;
 }
 
 .book-card:hover .book-image {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .book-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   flex: 1;
 }
 
 .book-title {
-  color: #2e1d12;
-  font-size: 1.2rem;
+  color: #1a1a1a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.26rem;
+  line-height: 1.1;
   font-weight: 700;
 }
 
 .book-author {
-  color: #6f5440;
+  color: #6b6b6b;
   font-size: 0.95rem;
 }
 
 .book-prices {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
 }
 
 .book-price,
 .price-offer {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #2c1a0f;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #1a1a1a;
 }
 
 .price-original {
-  color: #8a715e;
+  color: #8e8e8e;
   text-decoration: line-through;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .price-offer {
-  color: #b04d21;
+  color: #1a1a1a;
 }
 
 .book-button {
   margin-top: auto;
-  border: 0;
-  border-radius: 16px;
   padding: 12px 14px;
-  background: #2f1d12;
-  color: #fff6ed;
+  border: 1px solid #1a1a1a;
+  border-radius: 14px;
+  background: #1a1a1a;
+  color: #f5f1e6;
   font-weight: 700;
   cursor: pointer;
   transition:
     transform 0.22s ease,
-    opacity 0.22s ease,
     background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease,
     box-shadow 0.22s ease;
 }
 
 .book-button:hover {
-  transform: translateY(-2px);
-  background: #4b2c1a;
-  box-shadow: 0 14px 24px rgba(47, 29, 18, 0.18);
+  transform: translateY(-1px);
+  background: #000000;
+  border-color: #000000;
+  box-shadow: 0 12px 24px rgba(26, 26, 26, 0.12);
 }
 
 .book-button:disabled {
-  opacity: 0.48;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {
@@ -157,38 +165,41 @@
     border-radius: 18px;
   }
 
-  .book-image-shell {
-    border-radius: 16px;
-  }
-
+  .book-image-shell,
   .book-image {
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .book-badge,
   .stock-pill {
-    padding: 6px 10px;
-    font-size: 0.7rem;
+    padding: 5px 9px;
+    font-size: 0.68rem;
+    max-width: 100%;
   }
 
   .book-title {
     font-size: 1rem;
-    line-height: 1.1;
   }
 
   .book-author {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
 
   .book-price,
   .price-offer,
   .price-original {
-    font-size: 0.98rem;
+    font-size: 0.95rem;
+  }
+
+  .book-prices {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .book-button {
     padding: 10px 12px;
-    border-radius: 14px;
-    font-size: 0.92rem;
+    border-radius: 12px;
+    font-size: 0.88rem;
   }
 }

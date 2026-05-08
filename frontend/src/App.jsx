@@ -2,11 +2,28 @@ import { useEffect, useState } from "react";
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
+import InfoPage from "./pages/InfoPage";
 
 const CART_STORAGE_KEY = "bookshop-cart";
+const VIEW_PATHS = {
+  home: "/",
+  cart: "/carrito",
+  admin: "/admin",
+  nosotros: "/nosotros",
+  preguntas: "/preguntas",
+  politicas: "/politicas",
+  envios: "/envios",
+  contacto: "/contacto",
+};
+
+function getViewFromPathname(pathname) {
+  const entry = Object.entries(VIEW_PATHS).find(([, path]) => path === pathname);
+  return entry?.[0] || "home";
+}
 
 function App() {
-  const [currentView, setCurrentView] = useState("home");
+  const [currentView, setCurrentView] = useState(() => getViewFromPathname(window.location.pathname));
+  const [homeSession, setHomeSession] = useState(0);
   const [cartItems, setCartItems] = useState(() => {
     const storedCart = localStorage.getItem(CART_STORAGE_KEY);
     return storedCart ? JSON.parse(storedCart) : [];
@@ -17,9 +34,30 @@ function App() {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
+  useEffect(() => {
+    function handlePopState() {
+      setCurrentView(getViewFromPathname(window.location.pathname));
+      setIsCartOpen(false);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   function handleNavigate(view) {
+    const nextPath = VIEW_PATHS[view] || VIEW_PATHS.home;
+    window.history.pushState({}, "", nextPath);
     setCurrentView(view);
     setIsCartOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleHomeReset() {
+    window.history.pushState({}, "", VIEW_PATHS.home);
+    setCurrentView("home");
+    setIsCartOpen(false);
+    setHomeSession((currentValue) => currentValue + 1);
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   function addToCart(book) {
@@ -75,14 +113,21 @@ function App() {
     setCartItems([]);
   }
 
+  function handleOrderPlaced() {
+    clearCart();
+    handleHomeReset();
+  }
+
   if (currentView === "cart") {
     return (
       <Cart
         cartItems={cartItems}
         onBack={() => handleNavigate("home")}
+        onNavigate={handleNavigate}
         onUpdateQuantity={updateCartItemQuantity}
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
+        onOrderPlaced={handleOrderPlaced}
       />
     );
   }
@@ -91,14 +136,28 @@ function App() {
     return <Admin onBack={() => handleNavigate("home")} />;
   }
 
+  if (["nosotros", "preguntas", "politicas", "envios", "contacto"].includes(currentView)) {
+    return (
+      <InfoPage
+        slug={currentView}
+        cartItems={cartItems}
+        onOpenCart={() => setIsCartOpen(true)}
+        onNavigate={handleNavigate}
+        onBrandReset={handleHomeReset}
+      />
+    );
+  }
+
   return (
     <Home
+      key={homeSession}
       cartItems={cartItems}
       isCartOpen={isCartOpen}
       onAddToCart={addToCart}
       onCloseCart={() => setIsCartOpen(false)}
       onOpenCart={() => setIsCartOpen(true)}
       onNavigate={handleNavigate}
+      onBrandReset={handleHomeReset}
       onUpdateQuantity={updateCartItemQuantity}
       onRemoveItem={removeFromCart}
     />

@@ -5,11 +5,12 @@ function SearchBar({
   onSearchChange,
   showOffersOnly,
   onToggleOffers,
-  resultCount,
   categories,
   selectedCategory,
   onCategoryChange,
   combos,
+  onClearFilters,
+  activeFiltersCount = 0,
 }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const activeCategory = categories.find((category) => category.slug === selectedCategory);
@@ -18,17 +19,15 @@ function SearchBar({
     <div className="filters-stack">
       <section className="search-panel">
         <label className="search-box">
-          <span className="search-label">Buscar por titulo o autor</span>
           <input
             type="text"
             value={searchTerm}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Ej. Clean Code o Robert Martin"
+            placeholder="Buscar por titulo o autor"
           />
         </label>
 
         <div className="search-actions">
-          <span className="search-results-pill">{resultCount} visibles</span>
           <div className="filter-dropdown">
             <button
               type="button"
@@ -86,6 +85,11 @@ function SearchBar({
             onClick={onToggleOffers}
           >
             {showOffersOnly ? "Mostrando ofertas" : "Ver solo ofertas"}
+          </button>
+
+          <button type="button" className="clear-filters-button" onClick={onClearFilters}>
+            Limpiar
+            {activeFiltersCount > 0 ? <span className="clear-filters-badge">{activeFiltersCount}</span> : null}
           </button>
         </div>
       </section>
