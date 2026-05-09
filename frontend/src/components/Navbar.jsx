@@ -45,9 +45,6 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
         <button type="button" className="nav-link" onClick={() => handleNavigate("contacto")}>
           Contacto
         </button>
-        <button type="button" className="nav-link" onClick={() => handleNavigate("admin")}>
-          Admin
-        </button>
         <button
           type="button"
           className="cart-link"

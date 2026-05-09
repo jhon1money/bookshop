@@ -1168,7 +1168,7 @@
 .cart-item p,
 .cart-line p,
 .cart-line span {
-  color: #fff4f2;
+  color: #000000;
 }
 
 .cart-item-actions,
@@ -1888,7 +1888,9 @@
 }
 
 .checkout-submit-button {
-  min-width: 220px;
+  min-width: 180px;
+  width: auto;
+  padding-inline: 16px;
 }
 
 .checkout-secondary-actions {
@@ -1984,16 +1986,21 @@
     grid-template-columns: 1fr;
   }
 
-  .checkout-submit-bar,
   .checkout-secondary-actions,
   .info-actions {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .checkout-submit-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .checkout-submit-button {
-    min-width: 0;
-    width: 100%;
+    min-width: 160px;
+    width: auto;
+    align-self: flex-end;
   }
 }
 
