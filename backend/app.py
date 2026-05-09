@@ -199,6 +199,13 @@ def seed_site_sections():
     db.session.commit()
 
 
+with app.app_context():
+    db.create_all()
+    ensure_order_schema()
+    ensure_book_schema()
+    seed_site_sections()
+
+
 def generate_token(admin):
     payload = {
         "id": admin.id,
@@ -1329,10 +1336,4 @@ def create_order():
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        ensure_order_schema()
-        ensure_book_schema()
-        seed_site_sections()
-
     app.run(debug=True)
