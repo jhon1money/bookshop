@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = import.meta.env.VITE_API_URL;
 const NYT_API_KEY = import.meta.env.VITE_NYT_API_KEY;
 const GOOGLE_BOOKS_API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 const NYT_LIST_NAME = "combined-print-and-e-book-fiction";
