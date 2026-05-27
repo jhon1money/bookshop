@@ -3,7 +3,6 @@ import BookCard from "../components/BookCard";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/SearchBar";
 import CartDrawer from "../components/CartDrawer";
-import TrendingFeed from "../components/TrendingFeed";
 import { getBooks, getCategories, getSiteContent } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
 
@@ -100,6 +99,100 @@ function LoadingBooksGrid() {
         </article>
       ))}
     </div>
+  );
+}
+
+function BookStamp({ className = "", alt = "Libro abierto" }) {
+  return <img src="/reference/book-icon.png" alt={alt} className={className} />;
+}
+
+function HeroIcon({ name }) {
+  const icons = {
+    leaf: (
+      <>
+        <path
+          d="M7.2 17.2c3.4-0.1 6.3-1.4 8.2-3.6 2.7-3.2 3.2-7.3 3-10.8-3.3 0.3-7.2 1.1-10 3.9-2 2.1-3.2 4.9-3.2 8"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.6"
+        />
+        <path d="M11.2 9.7c1.4 2.1 3.1 4.5 4.6 7.7" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+        <path d="M7.5 14.1c1.1 0 2.2 0.3 3.4 0.9" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+      </>
+    ),
+    tag: (
+      <>
+        <path
+          d="M4.5 11.5l6.4-6.4c0.3-0.3 0.8-0.5 1.2-0.5h6.4c0.9 0 1.6 0.7 1.6 1.6v6.4c0 0.4-0.2 0.8-0.5 1.2l-6.4 6.4c-0.6 0.6-1.7 0.6-2.3 0l-6.4-6.4c-0.6-0.6-0.6-1.7 0-2.3z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+        <circle cx="15.4" cy="8.7" r="1.2" fill="currentColor" />
+      </>
+    ),
+    truck: (
+      <>
+        <path d="M3.4 8.6h11v8.2h-11z" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M14.4 11h3.5l2.7 2.9v2.9h-6.2z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+        <circle cx="8" cy="19.2" r="1.7" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="17.6" cy="19.2" r="1.7" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      </>
+    ),
+    shield: (
+      <>
+        <path
+          d="M12 3.8l7 2.8v5.2c0 4.2-2.6 7.6-7 8.9-4.4-1.3-7-4.7-7-8.9V6.6l7-2.8z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+        <path d="M9 12.4l2.1 2.2 4-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+      </>
+    ),
+    featureBook: (
+      <>
+        <path
+          d="M5.1 6.5c0-0.9 0.8-1.7 1.7-1.7h4.1c1.2 0 2.3 0.5 3.1 1.2 0.8-0.8 1.9-1.2 3.1-1.2h0.1c0.9 0 1.7 0.8 1.7 1.7v11.2c0 0.8-0.7 1.3-1.5 1.1-1.3-0.4-2.4-0.6-3.5-0.6-1.4 0-2.7 0.3-3.9 0.9-1.2-0.6-2.5-0.9-3.9-0.9-1.1 0-2.2 0.2-3.5 0.6-0.8 0.2-1.5-0.3-1.5-1.1V6.5z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="1.6"
+        />
+        <path d="M12 5.8v12" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      </>
+    ),
+    headset: (
+      <>
+        <path d="M5.2 13.2a6.8 6.8 0 0 1 13.6 0" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+        <path d="M6.4 13.3h1.8c0.9 0 1.6 0.7 1.6 1.6v2.8c0 0.9-0.7 1.6-1.6 1.6H6.9c-0.9 0-1.7-0.8-1.7-1.7v-2.6c0-0.9 0.3-1.7 1.2-1.7z" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M17.8 13.3h-1.8c-0.9 0-1.6 0.7-1.6 1.6v2.8c0 0.9 0.7 1.6 1.6 1.6h1.3c0.9 0 1.7-0.8 1.7-1.7v-2.6c0-0.9-0.3-1.7-1.2-1.7z" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      </>
+    ),
+  };
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {icons[name]}
+    </svg>
+  );
+}
+
+function BenefitCard({ icon, title, copy }) {
+  return (
+    <article className="sj-benefit-card">
+      <span className="sj-benefit-icon">
+        {icon === "featureBook" ? <BookStamp className="book-stamp-image benefit-book-image" /> : <HeroIcon name={icon} />}
+      </span>
+      <div className="sj-benefit-copy">
+        <strong>{title}</strong>
+        <span>{copy}</span>
+      </div>
+    </article>
   );
 }
 
@@ -207,9 +300,6 @@ function Home({
     setVisibleBooks(filteredBooks);
   }, [books, categories, deferredSearchTerm, selectedCategory, showOffersOnly]);
 
-  const heroSection = siteContent.hero || {};
-  const bannerPrimary = siteContent.banner_primary || {};
-  const bannerSecondary = siteContent.banner_secondary || {};
   const contactSection = siteContent.contact || {};
 
   const featuredBooks = useMemo(() => {
@@ -227,7 +317,10 @@ function Home({
     return recommended.length ? recommended.slice(0, 4) : books.filter((book) => book.oferta).slice(0, 4);
   }, [books]);
 
-  const preorderBooks = useMemo(() => books.filter((book) => book.preventa).slice(0, 4), [books]);
+  const offerBooks = useMemo(() => {
+    const offers = books.filter((book) => book.oferta);
+    return offers.length ? offers.slice(0, 4) : books.slice(0, 4);
+  }, [books]);
 
   const contactItems = contactSection.items || [];
   const activeFiltersCount = Number(showOffersOnly) + Number(selectedCategory !== "todos");
@@ -236,6 +329,13 @@ function Home({
     setSearchTerm("");
     setShowOffersOnly(false);
     setSelectedCategory("todos");
+  }
+
+  function scrollToSection(sectionId) {
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   return (
@@ -247,53 +347,92 @@ function Home({
         onBrandReset={onBrandReset}
       />
 
-      <section className="hero-panel container">
-        <div className="hero-grid">
-          <div className="hero-copy-block">
-            <p className="eyebrow">{heroSection.subtitle || "Libreria online"}</p>
-            <h1>{heroSection.title || "Descubre tu proxima lectura sin salir de casa"}</h1>
-            <p className="hero-copy">
-              {heroSection.body ||
-                "Explora recomendaciones, ofertas y tus proximas compras en una experiencia ligera, moderna y agradable de usar."}
-            </p>
+      <section className="container sj-hero-shell">
+        <div className="sj-hero-stage">
+          <div className="sj-hero-panel">
+            <span className="sj-hero-pattern sj-hero-pattern-top" aria-hidden="true" />
+            <span className="sj-hero-pattern sj-hero-pattern-bottom" aria-hidden="true" />
 
-            {(heroSection.items || []).length ? (
-              <div className="hero-highlights">
-                {(heroSection.items || []).slice(0, 3).map((item, index) => (
-                  <span key={`${item}-${index}`} className="hero-highlight-pill">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <TrendingFeed />
-        </div>
-      </section>
-
-      <section className="container banner-strip">
-        <article className="banner-card">
-          <p className="section-label">{bannerPrimary.subtitle || "Colecciones"}</p>
-          <h2>{bannerPrimary.title || "Colecciones destacadas"}</h2>
-          <p>{bannerPrimary.body || "Destaca autores, sagas y secciones clave desde el admin."}</p>
-          <div className="banner-tags">
-            {(bannerPrimary.items || []).map((item, index) => (
-              <span key={`${item}-${index}`} className="banner-tag">
-                {item}
+            <div className="sj-hero-panel-inner">
+              <span className="sj-hero-book-icon" aria-hidden="true">
+                <BookStamp className="book-stamp-image hero-book-image" />
               </span>
-            ))}
-          </div>
-        </article>
 
-        <article className="banner-card banner-card-secondary">
-          <p className="section-label">{bannerSecondary.subtitle || "Experiencia"}</p>
-          <h2>{bannerSecondary.title || "Compra con seguimiento claro"}</h2>
-          <p>{bannerSecondary.body || "Resumen por correo, orden numerada y mensajes listos para WhatsApp."}</p>
-          <button type="button" className="secondary-button" onClick={() => onNavigate("politicas")}>
-            {bannerSecondary.cta_text || "Ver mas"}
-          </button>
-        </article>
+              <div className="sj-hero-overline">
+                <span />
+                <p>Libreria</p>
+                <span />
+              </div>
+
+              <div className="sj-hero-monogram">
+                <span className="sj-hero-monogram-copy">SJ</span>
+                <span className="sj-hero-leaf" aria-hidden="true">
+                  <HeroIcon name="leaf" />
+                </span>
+              </div>
+
+              <div className="sj-hero-divider" aria-hidden="true">
+                <span />
+                <i />
+                <span />
+              </div>
+
+              <h1 className="sj-hero-title">
+                <span>Mas que libros,</span>
+                <em>historias que te transforman.</em>
+              </h1>
+
+              <p className="sj-hero-support">
+                <span className="sj-hero-support-icon" aria-hidden="true">
+                  <BookStamp className="book-stamp-image support-book-image" />
+                </span>
+                Conecta. Aprende. Inspirate.
+              </p>
+
+              <div className="sj-hero-actions">
+                <button type="button" className="sj-hero-button filled" onClick={() => scrollToSection("catalogo")}>
+                  <span className="sj-hero-button-icon" aria-hidden="true">
+                    <BookStamp className="book-stamp-image button-book-image" />
+                  </span>
+                  Ver catalogo
+                </button>
+
+                <button
+                  type="button"
+                  className="sj-hero-button outline"
+                  onClick={() => {
+                    setShowOffersOnly(true);
+                    scrollToSection("catalogo");
+                  }}
+                >
+                  <span className="sj-hero-button-icon" aria-hidden="true">
+                    <HeroIcon name="tag" />
+                  </span>
+                  Ofertas
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="sj-hero-seam" aria-hidden="true">
+            <span className="sj-hero-seam-glow" />
+          </div>
+
+          <div className="sj-hero-scene">
+            <img
+              src="/reference/libreria-sj-hero-scene.png"
+              alt="Pila de libros fisicos frente a una biblioteca"
+              className="sj-hero-scene-image"
+            />
+          </div>
+        </div>
+
+        <div className="sj-benefits-row">
+          <BenefitCard icon="truck" title="Envios a todo" copy="el pais" />
+          <BenefitCard icon="shield" title="Compra 100%" copy="segura" />
+          <BenefitCard icon="featureBook" title="Novedades" copy="cada semana" />
+          <BenefitCard icon="headset" title="Atencion" copy="personalizada" />
+        </div>
       </section>
 
       <section className="container catalog-panel" id="catalogo">
@@ -305,6 +444,7 @@ function Home({
           <span className="book-count">{visibleBooks.length} resultados</span>
         </div>
 
+        <div id="categorias" className="section-anchor" />
         <SearchBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -338,7 +478,7 @@ function Home({
         ) : null}
       </section>
 
-      <section className="container editorial-strip" id="destacados">
+      <section className="container editorial-strip" id="novedades">
         <article className="editorial-card">
           <p className="section-label">Destacados</p>
           <h2>Selecciones editoriales del momento</h2>
@@ -378,8 +518,28 @@ function Home({
 
       <section className="container editorial-strip">
         <article className="editorial-card">
+          <p className="section-label" id="ofertas">Ofertas</p>
+          <h2>Titulos con precio especial</h2>
+          <div className="editorial-list">
+            {offerBooks.map((book) => (
+              <button
+                type="button"
+                key={`offer-${book.id}`}
+                className="editorial-item"
+                onClick={() => setSelectedBook(book)}
+              >
+                <span className="editorial-item-title">{book.titulo}</span>
+                <span className="editorial-item-copy">
+                  {book.oferta && book.precio_oferta ? "Oferta activa para compra fisica" : "Consulta precio especial"}
+                </span>
+              </button>
+            ))}
+          </div>
+        </article>
+
+        <article className="editorial-card">
           <p className="section-label">Recomendados</p>
-          <h2>Libros para volver a leer</h2>
+          <h2>Lecturas que vale la pena conservar</h2>
           <div className="editorial-list">
             {recommendedBooks.map((book) => (
               <button
@@ -389,27 +549,7 @@ function Home({
                 onClick={() => setSelectedBook(book)}
               >
                 <span className="editorial-item-title">{book.titulo}</span>
-                <span className="editorial-item-copy">Elegido por su calidad y demanda</span>
-              </button>
-            ))}
-          </div>
-        </article>
-
-        <article className="editorial-card">
-          <p className="section-label">Preventa</p>
-          <h2>Proximas ediciones para reservar</h2>
-          <div className="editorial-list">
-            {(preorderBooks.length ? preorderBooks : newBooks).map((book) => (
-              <button
-                type="button"
-                key={`preorder-${book.id}`}
-                className="editorial-item"
-                onClick={() => setSelectedBook(book)}
-              >
-                <span className="editorial-item-title">{book.titulo}</span>
-                <span className="editorial-item-copy">
-                  {book.preventa ? "Reserva anticipada disponible" : "Consulta disponibilidad"}
-                </span>
+                <span className="editorial-item-copy">Elegido por su calidad, ritmo y permanencia</span>
               </button>
             ))}
           </div>
