@@ -166,8 +166,8 @@ SITE_SECTION_DEFAULTS = {
         "body": "Si necesitas ayuda para elegir o seguir tu pedido, estamos listos para responderte.",
         "items_json": json.dumps(
             [
-                {"title": "WhatsApp", "body": "809-709-3803"},
-                {"title": "Correo", "body": "sebastianmatias1027@gmail.com"},
+                {"title": "WhatsApp", "body": "829-447-5730"},
+                {"title": "Correo", "body": "Cristofer25suarez@gmail.com"},
                 {"title": "Horario", "body": "Lunes a sabado de 9:00am a 9:00pm"},
             ],
             ensure_ascii=True,
