@@ -17,7 +17,7 @@ function ensureMetaTag(selector, attributes = {}) {
 export default function usePageMeta({
   title,
   description,
-  image = "https://placehold.co/1200x630/f5f1e6/1a1a1a?text=BookShop",
+  image = "https://placehold.co/1200x630/f5f1e6/1a1a1a?text=Libreria+SJ",
 }) {
   useEffect(() => {
     const resolvedTitle = title ? `${title} | BookShop` : "BookShop | Libreria de libros fisicos";
