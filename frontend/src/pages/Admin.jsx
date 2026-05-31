@@ -44,6 +44,8 @@ const EMPTY_BOOK_FORM = {
   novedad: false,
   preventa: false,
   recomendado: false,
+  promo_2x1: false,
+  promo_2x1_partner_id: "",
 };
 
 const SITE_SECTION_OPTIONS = [
@@ -95,6 +97,8 @@ function normalizeBookForm(book) {
     novedad: Boolean(book.novedad),
     preventa: Boolean(book.preventa),
     recomendado: Boolean(book.recomendado),
+    promo_2x1: Boolean(book.promo_2x1),
+    promo_2x1_partner_id: book.promo_2x1_partner_id ?? "",
   };
 }
 
@@ -137,6 +141,8 @@ function Admin({ onBack }) {
   usePageMeta({
     title: "Admin",
     description: "Dashboard administrativo para controlar ventas, inventario, contenido y órdenes de la librería.",
+    canonicalPath: "/admin",
+    robots: "noindex, nofollow",
   });
 
   const stats = dashboard?.stats || {};
@@ -161,6 +167,10 @@ function Admin({ onBack }) {
   const storeCategories = useMemo(
     () => categories.filter((category) => category?.id && category?.nombre),
     [categories],
+  );
+  const promoPartnerOptions = useMemo(
+    () => books.filter((book) => book.active && book.id !== editingBookId),
+    [books, editingBookId],
   );
 
   const loadAdminData = useCallback(async (currentToken, filters = orderFilters, overviewFilters = dashboardFilters) => {
@@ -199,7 +209,7 @@ function Admin({ onBack }) {
       if ((loadError.message || "").toLowerCase().includes("token")) {
         handleLogout();
       }
-      setError(loadError.message || "No se pudo cargar el panel admin");
+      setError(loadError.message || "No se cargó el panel.");
     } finally {
       setLoading(false);
     }
@@ -328,10 +338,10 @@ function Admin({ onBack }) {
       localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(response.data.user));
       setToken(response.data.token);
       setAdminUser(response.data.user);
-      setSuccess("Sesión iniciada correctamente.");
+      setSuccess("Sesión iniciada.");
       setLoginForm({ username: "", password: "" });
     } catch (loginError) {
-      setError(loginError.message || "No se pudo iniciar sesión");
+      setError(loginError.message || "No se inició sesión.");
     } finally {
       setLoading(false);
     }
@@ -356,7 +366,7 @@ function Admin({ onBack }) {
       setSuccess("Estado de la orden actualizado.");
       await loadAdminData(token, orderFilters);
     } catch (statusError) {
-      setError(statusError.message || "No se pudo actualizar la orden");
+      setError(statusError.message || "No se actualizó la orden.");
     }
   }
 
@@ -371,7 +381,7 @@ function Admin({ onBack }) {
       URL.revokeObjectURL(fileUrl);
       setSuccess("Reporte de órdenes exportado para Excel.");
     } catch (exportError) {
-      setError(exportError.message || "No se pudo exportar el reporte");
+      setError(exportError.message || "No se exportó.");
     }
   }
 
@@ -435,22 +445,26 @@ function Admin({ onBack }) {
       stock: Number(bookForm.stock),
       precio_oferta: bookForm.precio_oferta === "" ? null : Number(bookForm.precio_oferta),
       category_id: bookForm.category_id === "" ? null : Number(bookForm.category_id),
+      promo_2x1_partner_id:
+        bookForm.promo_2x1 && bookForm.promo_2x1_partner_id !== ""
+          ? Number(bookForm.promo_2x1_partner_id)
+          : null,
     };
 
     try {
       if (editingBookId) {
         const response = await updateAdminBook(token, editingBookId, payload);
-        setSuccess(response.message || "Libro actualizado correctamente.");
+        setSuccess(response.message || "Libro actualizado.");
       } else {
         const response = await createAdminBook(token, payload);
-        setSuccess(response.message || "Libro creado correctamente.");
+        setSuccess(response.message || "Libro creado.");
       }
 
       setEditingBookId(null);
       setBookForm(EMPTY_BOOK_FORM);
       await loadAdminData(token, orderFilters);
     } catch (bookError) {
-      setError(bookError.message || "No se pudo guardar el libro");
+      setError(bookError.message || "No se guardó el libro.");
     }
   }
 
@@ -465,13 +479,11 @@ function Admin({ onBack }) {
         setBookForm(EMPTY_BOOK_FORM);
       }
       setSuccess(
-        response.message === "Book archived from catalog"
-          ? "El libro tenía historial de órdenes y fue archivado para salir de la tienda sin perder ventas."
-          : "Libro eliminado correctamente.",
+        response.message === "Libro archivado." ? "Libro archivado." : "Libro eliminado.",
       );
       await loadAdminData(token, orderFilters);
     } catch (bookError) {
-      setError(bookError.message || "No se pudo eliminar el libro");
+      setError(bookError.message || "No se eliminó el libro.");
     }
   }
 
@@ -483,10 +495,10 @@ function Admin({ onBack }) {
     try {
       const response = await createAdminCategory(token, { nombre: categoryName });
       setCategoryName("");
-      setSuccess(response.message || "Categoría creada correctamente.");
+      setSuccess(response.message || "Categoría creada.");
       await loadAdminData(token, orderFilters);
     } catch (categoryError) {
-      setError(categoryError.message || "No se pudo crear la categoría");
+      setError(categoryError.message || "No se creó la categoría.");
     }
   }
 
@@ -521,10 +533,10 @@ function Admin({ onBack }) {
         items,
         is_active: sectionForm.is_active,
       });
-      setSuccess(response.message || "Sección guardada correctamente.");
+      setSuccess(response.message || "Sección guardada.");
       await loadAdminData(token, orderFilters, dashboardFilters);
     } catch (sectionError) {
-      setError(sectionError.message || "No se pudo guardar la sección");
+      setError(sectionError.message || "No se guardó la sección.");
     }
   }
 
@@ -534,10 +546,10 @@ function Admin({ onBack }) {
 
     try {
       const response = await deleteAdminCategory(token, categoryId);
-      setSuccess(response.message || "Categoría eliminada correctamente.");
+      setSuccess(response.message || "Categoría eliminada.");
       await loadAdminData(token, orderFilters);
     } catch (categoryError) {
-      setError(categoryError.message || "No se pudo eliminar la categoría");
+      setError(categoryError.message || "No se eliminó la categoría.");
     }
   }
 
@@ -968,6 +980,18 @@ function Admin({ onBack }) {
                           <strong>{formatCurrency(item.line_total)}</strong>
                         </div>
                       ))}
+                      {Number(order.promo_discount_amount || 0) > 0 ? (
+                        <div className="admin-order-item discount-row">
+                          <span>Promo 2x1</span>
+                          <strong>-{formatCurrency(order.promo_discount_amount)}</strong>
+                        </div>
+                      ) : null}
+                      {Number(order.discount_amount || 0) > 0 ? (
+                        <div className="admin-order-item discount-row">
+                          <span>Descuento {Math.round(Number(order.discount_rate || 0) * 100)}%</span>
+                          <strong>-{formatCurrency(order.discount_amount)}</strong>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="admin-order-actions">
@@ -1220,6 +1244,43 @@ function Admin({ onBack }) {
                   />
                   <span>Recomendado</span>
                 </label>
+                <label className="admin-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={bookForm.promo_2x1}
+                    onChange={(event) =>
+                      setBookForm((currentValue) => ({
+                        ...currentValue,
+                        promo_2x1: event.target.checked,
+                        promo_2x1_partner_id: event.target.checked ? currentValue.promo_2x1_partner_id : "",
+                      }))
+                    }
+                  />
+                  <span>Promoción 2x1</span>
+                </label>
+                <label className="checkout-field admin-promo-field">
+                  <span>Libro enlazado 2x1</span>
+                  <select
+                    value={bookForm.promo_2x1_partner_id}
+                    onChange={(event) =>
+                      setBookForm((currentValue) => ({
+                        ...currentValue,
+                        promo_2x1: Boolean(event.target.value),
+                        promo_2x1_partner_id: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Sin enlace 2x1</option>
+                    {promoPartnerOptions.map((book) => (
+                      <option key={book.id} value={book.id}>
+                        {book.titulo}
+                      </option>
+                    ))}
+                  </select>
+                  <small>
+                    Al guardar, ambos libros quedan enlazados y la tienda muestra la promoción.
+                  </small>
+                </label>
 
                 <div className="admin-form-actions">
                   <button type="submit" className="checkout-submit">
@@ -1275,6 +1336,7 @@ function Admin({ onBack }) {
                             {book.novedad ? <span className="admin-tag">Novedad</span> : null}
                             {book.preventa ? <span className="admin-tag">Preventa</span> : null}
                             {book.recomendado ? <span className="admin-tag">Recomendado</span> : null}
+                            {book.promo_2x1 ? <span className="admin-tag admin-tag-promo">2x1</span> : null}
                           </div>
                         </td>
                         <td>{book.status_label}</td>
@@ -1368,7 +1430,7 @@ function Admin({ onBack }) {
 
         {activeTab === "content" ? (
           <section className="admin-grid">
-            <div className="admin-panel-card">
+            <div className="admin-panel-card admin-content-editor">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Banners y páginas</p>
@@ -1464,7 +1526,7 @@ function Admin({ onBack }) {
               </form>
             </div>
 
-            <div className="admin-panel-card admin-panel-span">
+            <div className="admin-panel-card admin-content-summary">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Resumen</p>

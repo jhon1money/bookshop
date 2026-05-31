@@ -44,6 +44,11 @@
   color: #9c3129;
 }
 
+.promo-badge {
+  background: #e7f3d9;
+  color: #3f6720;
+}
+
 .book-flag-chip {
   background: #eaf0ef;
   color: #255449;
@@ -135,6 +140,13 @@
   margin-top: 0.25rem;
 }
 
+.book-promo-note {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .book-price,
 .price-offer {
   color: var(--ink);
@@ -224,5 +236,59 @@
 
   .book-card-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .book-card {
+    gap: 0.55rem;
+    padding: 0.5rem;
+  }
+
+  .book-badge-row {
+    gap: 0.28rem;
+  }
+
+  .book-badge,
+  .book-flag-chip,
+  .stock-pill {
+    min-height: 1.35rem;
+    padding: 0.22rem 0.34rem;
+    font-size: 0.6rem;
+  }
+
+  .book-content {
+    gap: 0.32rem;
+  }
+
+  .book-title,
+  .book-title-button {
+    font-size: 0.86rem;
+    line-height: 1.16;
+  }
+
+  .book-author {
+    font-size: 0.72rem;
+  }
+
+  .book-price,
+  .price-offer,
+  .price-original {
+    font-size: 0.82rem;
+  }
+
+  .book-promo-note {
+    font-size: 0.68rem;
+  }
+
+  .book-button,
+  .book-detail-button {
+    min-height: 2.2rem;
+    padding: 0.48rem 0.52rem;
+    font-size: 0.74rem;
+  }
+
+  .book-detail-button {
+    display: none;
   }
 }

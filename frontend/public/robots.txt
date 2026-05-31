@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /carrito
+
+Sitemap: https://bookshop-rho-ebon.vercel.app/sitemap.xml

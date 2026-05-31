@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { getSiteContent } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
@@ -65,7 +66,10 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
   const [error, setError] = useState("");
 
   const meta = PAGE_META[slug] || PAGE_META.nosotros;
-  usePageMeta(meta);
+  usePageMeta({
+    ...meta,
+    canonicalPath: `/${slug}`,
+  });
 
   useEffect(() => {
     async function loadContent() {
@@ -75,7 +79,7 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
         const response = await getSiteContent();
         setSections(response.data || {});
       } catch (loadError) {
-        setError(loadError.message || "No se pudo cargar esta pagina");
+        setError(loadError.message || "No se cargó la página.");
       } finally {
         setLoading(false);
       }
@@ -85,6 +89,7 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
   }, [slug]);
 
   const section = useMemo(() => sections[INFO_SECTION_MAP[slug]] || null, [sections, slug]);
+  const aboutSection = sections.about || null;
   const ctaView = section?.cta_link?.startsWith("/#")
     ? "home"
     : section?.cta_link?.replace("/", "") || "home";
@@ -126,7 +131,15 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
 
         {!loading && !error && section ? (
           <>
-            {renderSectionItems(section.items)}
+            {slug === "contacto" && aboutSection ? (
+              <section className="contact-about-panel">
+                <p className="section-label">{aboutSection.subtitle || "Sobre nosotros"}</p>
+                <h2>{aboutSection.title || "Sobre Librería SJ"}</h2>
+                <p>{aboutSection.body}</p>
+                {renderSectionItems(aboutSection.items)}
+              </section>
+            ) : null}
+            {slug === "contacto" ? null : renderSectionItems(section.items)}
             <div className="info-actions">
               {section.cta_link ? (
                 <button
@@ -144,6 +157,7 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
           </>
         ) : null}
       </section>
+      <Footer onNavigate={onNavigate} />
     </main>
   );
 }

@@ -14,6 +14,7 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
         {book.novedad ? <span className="book-flag-chip">Novedad</span> : null}
         {book.preventa ? <span className="book-flag-chip">Preventa</span> : null}
         {book.recomendado ? <span className="book-flag-chip">Recomendado</span> : null}
+        {book.promo_2x1 ? <span className="book-badge promo-badge">2x1</span> : null}
         <span className={`stock-pill ${book.stock > 0 ? "in-stock" : "out-stock"}`}>
           {book.stock > 0 ? `${book.stock} disponibles` : "Sin stock"}
         </span>
@@ -40,6 +41,9 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
           <span className={offerPrice ? "price-original" : "book-price"}>RD$ {displayPrice}</span>
           {offerPrice ? <span className="price-offer">RD$ {offerPrice}</span> : null}
         </div>
+        {book.promo_2x1 ? (
+          <span className="book-promo-note">2x1 con {book.promo_2x1_partner_title || "libro enlazado"}</span>
+        ) : null}
 
         <div className="book-card-actions">
           <button

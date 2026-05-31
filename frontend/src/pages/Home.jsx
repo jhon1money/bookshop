@@ -3,6 +3,7 @@ import BookCard from "../components/BookCard";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/SearchBar";
 import CartDrawer from "../components/CartDrawer";
+import Footer from "../components/Footer";
 import { getBooks, getCategories, getSiteContent } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
 
@@ -229,6 +230,8 @@ function Home({
   usePageMeta({
     title: "Inicio",
     description: "Compra libros físicos, descubre novedades editoriales y confirma tus pedidos por WhatsApp y correo.",
+    keywords: "comprar libros físicos, librería online República Dominicana, novelas, negocios, desarrollo personal",
+    canonicalPath: "/",
   });
 
   useEffect(() => {
@@ -274,7 +277,7 @@ function Home({
           setSiteContent(siteResponse.value.data || {});
         }
       } catch (loadError) {
-        setError(loadError.message || "No se pudo cargar la tienda");
+        setError(loadError.message || "No se cargó la tienda.");
       } finally {
         setLoading(false);
       }
@@ -305,7 +308,7 @@ function Home({
     setVisibleBooks(filteredBooks);
   }, [books, categories, deferredSearchTerm, selectedCategory, showOffersOnly]);
 
-  const contactSection = siteContent.contact || {};
+  const aboutSection = siteContent.about || {};
 
   const featuredBooks = useMemo(() => {
     const destacados = books.filter((book) => book.destacado);
@@ -327,7 +330,7 @@ function Home({
     return offers.length ? offers.slice(0, 4) : books.slice(0, 4);
   }, [books]);
 
-  const contactItems = contactSection.items || [];
+  const aboutItems = aboutSection.items || [];
   const activeFiltersCount = Number(showOffersOnly) + Number(selectedCategory !== "todos");
 
   function resetFilters() {
@@ -471,7 +474,7 @@ function Home({
         {loading ? <LoadingBooksGrid /> : null}
         {error ? <p className="status-box error-box">{error}</p> : null}
         {!loading && !error && visibleBooks.length === 0 ? (
-          <p className="status-box">No encontramos libros con esos filtros. Prueba otra búsqueda.</p>
+          <p className="status-box">Sin resultados. Prueba otra búsqueda.</p>
         ) : null}
 
         {!loading && !error && visibleBooks.length > 0 ? (
@@ -568,27 +571,27 @@ function Home({
 
       <section className="container contact-panel">
         <div className="contact-copy">
-          <p className="section-label">{contactSection.subtitle || "Contacto"}</p>
-          <h2>{contactSection.title || "Te ayudamos a encontrar tu siguiente libro físico"}</h2>
+          <p className="section-label">{aboutSection.subtitle || "Sobre nosotros"}</p>
+          <h2>{aboutSection.title || "Una librería online pensada para comprar con confianza"}</h2>
           <p>
-            {contactSection.body ||
-              "Atendemos pedidos por WhatsApp, coordinamos entregas y confirmamos cada compra con un número de orden por correo."}
+            {aboutSection.body ||
+              "Seleccionamos libros físicos con criterio editorial, atención cercana y seguimiento real de cada pedido."}
           </p>
           <div className="info-actions">
             <button type="button" className="primary-button" onClick={() => onNavigate("contacto")}>
-              Ir a contacto
+              Sobre nosotros
             </button>
-            <button type="button" className="secondary-button" onClick={() => onNavigate("envios")}>
-              Ver envíos
+            <button type="button" className="secondary-button" onClick={() => onNavigate("blog")}>
+              Leer el blog
             </button>
           </div>
         </div>
 
         <div className="contact-grid">
-          {contactItems.length
-            ? contactItems.map((item, index) => (
+          {aboutItems.length
+            ? aboutItems.map((item, index) => (
                 <article key={`${item.title || item}-${index}`} className="contact-card">
-                  <h3>{item.title || "Contacto"}</h3>
+                  <h3>{item.title || "Librería SJ"}</h3>
                   <p>{item.body || item}</p>
                 </article>
               ))
@@ -628,11 +631,17 @@ function Home({
                   {selectedBook.novedad ? <span className="book-flag-chip">Novedad</span> : null}
                   {selectedBook.preventa ? <span className="book-flag-chip">Preventa</span> : null}
                   {selectedBook.recomendado ? <span className="book-flag-chip">Recomendado</span> : null}
+                  {selectedBook.promo_2x1 ? <span className="book-badge promo-badge">2x1</span> : null}
                 </div>
 
                 <p className="modal-description">
                   {selectedBook.descripcion || "Este libro aún no tiene descripción registrada."}
                 </p>
+                {selectedBook.promo_2x1 ? (
+                  <p className="modal-promo-note">
+                    Promo 2x1 enlazada con {selectedBook.promo_2x1_partner_title || "otro libro seleccionado"}.
+                  </p>
+                ) : null}
 
                 <div className="book-prices modal-price">
                   <span className={selectedBook.oferta && selectedBook.precio_oferta ? "price-original" : "book-price"}>
@@ -665,6 +674,7 @@ function Home({
         onUpdateQuantity={onUpdateQuantity}
         onRemoveItem={onRemoveItem}
       />
+      <Footer onNavigate={onNavigate} />
     </main>
   );
 }

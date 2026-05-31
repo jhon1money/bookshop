@@ -7,6 +7,10 @@ function createAuthHeaders(token) {
   };
 }
 
+async function readJson(response) {
+  return response.json();
+}
+
 export async function getBooks(search = "", category = "", ofertas = "") {
   const params = new URLSearchParams();
 
@@ -16,34 +20,33 @@ export async function getBooks(search = "", category = "", ofertas = "") {
 
   const queryString = params.toString();
   const url = `${API_URL}/api/books${queryString ? `?${queryString}` : ""}`;
-
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error("No se pudieron cargar los libros");
+    throw new Error("No se cargaron los libros.");
   }
 
-  return response.json();
+  return readJson(response);
 }
 
 export async function getCategories() {
   const response = await fetch(`${API_URL}/api/categories`);
 
   if (!response.ok) {
-    throw new Error("No se pudieron cargar las categorías");
+    throw new Error("No se cargaron las categorías.");
   }
 
-  return response.json();
+  return readJson(response);
 }
 
 export async function getSiteContent() {
   const response = await fetch(`${API_URL}/api/site/content`);
 
   if (!response.ok) {
-    throw new Error("No se pudo cargar el contenido de la tienda");
+    throw new Error("No se cargó el contenido.");
   }
 
-  return response.json();
+  return readJson(response);
 }
 
 export async function createOrder(payload) {
@@ -54,11 +57,88 @@ export async function createOrder(payload) {
     },
     body: JSON.stringify(payload),
   });
-
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo crear la orden");
+    throw new Error(data.message || "No se creó el pedido.");
+  }
+
+  return data;
+}
+
+export async function quoteOrder(payload) {
+  const response = await fetch(`${API_URL}/api/orders/quote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new Error(data.message || "No se calculó el resumen.");
+  }
+
+  return data;
+}
+
+export async function getBlogPosts() {
+  const response = await fetch(`${API_URL}/api/blog/posts`);
+
+  if (!response.ok) {
+    throw new Error("No se cargó el blog.");
+  }
+
+  return readJson(response);
+}
+
+export async function validateBlogOrder(payload) {
+  const response = await fetch(`${API_URL}/api/blog/validate-order`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new Error(data.message || "Orden inválida.");
+  }
+
+  return data;
+}
+
+export async function createBlogPost(payload) {
+  const response = await fetch(`${API_URL}/api/blog/posts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new Error(data.message || "No se publicó.");
+  }
+
+  return data;
+}
+
+export async function createBlogComment(postId, payload) {
+  const response = await fetch(`${API_URL}/api/blog/posts/${postId}/comments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new Error(data.message || "No se comentó.");
   }
 
   return data;
@@ -72,11 +152,10 @@ export async function loginAdmin(payload) {
     },
     body: JSON.stringify(payload),
   });
-
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo iniciar sesion");
+    throw new Error(data.message || "No se inició sesión.");
   }
 
   return data;
@@ -86,10 +165,10 @@ export async function getAdminOverview(token) {
   const response = await fetch(`${API_URL}/api/admin/overview`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo cargar el dashboard");
+    throw new Error(data.message || "No se cargó el panel.");
   }
 
   return data;
@@ -103,10 +182,10 @@ export async function getAdminOverviewWithFilters(token, filters = {}) {
   const response = await fetch(`${API_URL}/api/admin/overview${params.toString() ? `?${params.toString()}` : ""}`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo cargar el dashboard");
+    throw new Error(data.message || "No se cargó el panel.");
   }
 
   return data;
@@ -116,10 +195,10 @@ export async function getAdminBooks(token) {
   const response = await fetch(`${API_URL}/api/admin/books`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo cargar el inventario de libros");
+    throw new Error(data.message || "No se cargaron los libros.");
   }
 
   return data;
@@ -129,10 +208,10 @@ export async function getAdminInventory(token) {
   const response = await fetch(`${API_URL}/api/admin/inventory`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo cargar el inventario");
+    throw new Error(data.message || "No se cargó el inventario.");
   }
 
   return data;
@@ -149,10 +228,10 @@ export async function getAdminOrders(token, filters = {}) {
   const response = await fetch(`${API_URL}/api/admin/orders${queryString ? `?${queryString}` : ""}`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudieron cargar las órdenes");
+    throw new Error(data.message || "No se cargaron las órdenes.");
   }
 
   return data;
@@ -173,8 +252,8 @@ export async function exportAdminOrdersCsv(token, filters = {}) {
   );
 
   if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.message || "No se pudo exportar el reporte");
+    const data = await readJson(response);
+    throw new Error(data.message || "No se exportó.");
   }
 
   return response.blob();
@@ -186,10 +265,10 @@ export async function updateAdminOrderStatus(token, orderId, status) {
     headers: createAuthHeaders(token),
     body: JSON.stringify({ status }),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo actualizar el estado");
+    throw new Error(data.message || "No se actualizó.");
   }
 
   return data;
@@ -201,10 +280,10 @@ export async function createAdminBook(token, payload) {
     headers: createAuthHeaders(token),
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo crear el libro");
+    throw new Error(data.message || "No se creó el libro.");
   }
 
   return data;
@@ -216,10 +295,10 @@ export async function updateAdminBook(token, bookId, payload) {
     headers: createAuthHeaders(token),
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo actualizar el libro");
+    throw new Error(data.message || "No se actualizó el libro.");
   }
 
   return data;
@@ -230,10 +309,10 @@ export async function deleteAdminBook(token, bookId) {
     method: "DELETE",
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo eliminar el libro");
+    throw new Error(data.message || "No se eliminó el libro.");
   }
 
   return data;
@@ -245,10 +324,10 @@ export async function createAdminCategory(token, payload) {
     headers: createAuthHeaders(token),
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo crear la categoría");
+    throw new Error(data.message || "No se creó la categoría.");
   }
 
   return data;
@@ -258,10 +337,10 @@ export async function getAdminSiteContent(token) {
   const response = await fetch(`${API_URL}/api/admin/site-content`, {
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo cargar el contenido editable");
+    throw new Error(data.message || "No se cargó el contenido.");
   }
 
   return data;
@@ -273,10 +352,10 @@ export async function updateAdminSiteContent(token, key, payload) {
     headers: createAuthHeaders(token),
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo guardar la seccion");
+    throw new Error(data.message || "No se guardó la sección.");
   }
 
   return data;
@@ -287,10 +366,10 @@ export async function deleteAdminCategory(token, categoryId) {
     method: "DELETE",
     headers: createAuthHeaders(token),
   });
-  const data = await response.json();
+  const data = await readJson(response);
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo eliminar la categoría");
+    throw new Error(data.message || "No se eliminó la categoría.");
   }
 
   return data;

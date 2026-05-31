@@ -38,6 +38,8 @@ class Book(db.Model):
     novedad = db.Column(db.Boolean, default=False)
     preventa = db.Column(db.Boolean, default=False)
     recomendado = db.Column(db.Boolean, default=False)
+    promo_2x1 = db.Column(db.Boolean, default=False)
+    promo_2x1_partner_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -56,6 +58,10 @@ class Order(db.Model):
     customer_address = db.Column(db.String(250))
     status = db.Column(db.String(50), default="pending")
 
+    subtotal = db.Column(db.Float)
+    discount_rate = db.Column(db.Float, default=0)
+    discount_amount = db.Column(db.Float, default=0)
+    promo_discount_amount = db.Column(db.Float, default=0)
     total = db.Column(db.Float)
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -91,3 +97,35 @@ class SiteSection(db.Model):
     items_json = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BlogPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    order_number = db.Column(db.String(50), nullable=False)
+    author_name = db.Column(db.String(150), nullable=False)
+    title = db.Column(db.String(180), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), default="published")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship("Order")
+    comments = db.relationship(
+        "BlogComment",
+        backref="post",
+        lazy=True,
+        cascade="all, delete-orphan",
+        order_by="BlogComment.created_at.asc()",
+    )
+
+
+class BlogComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey("blog_post.id"), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    order_number = db.Column(db.String(50), nullable=False)
+    author_name = db.Column(db.String(150), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship("Order")

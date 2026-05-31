@@ -3,12 +3,15 @@ import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import InfoPage from "./pages/InfoPage";
+import Blog from "./pages/Blog";
+import WhatsAppFloat from "./components/WhatsAppFloat";
 
 const CART_STORAGE_KEY = "bookshop-cart";
 const VIEW_PATHS = {
   home: "/",
   cart: "/carrito",
   admin: "/admin",
+  blog: "/blog",
   nosotros: "/nosotros",
   preguntas: "/preguntas",
   politicas: "/politicas",
@@ -123,8 +126,17 @@ function App() {
     handleHomeReset();
   }
 
-  if (currentView === "cart") {
+  function renderPublicPage(page) {
     return (
+      <>
+        {page}
+        <WhatsAppFloat />
+      </>
+    );
+  }
+
+  if (currentView === "cart") {
+    return renderPublicPage(
       <Cart
         cartItems={cartItems}
         onBack={() => handleNavigate("home")}
@@ -133,7 +145,7 @@ function App() {
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
         onOrderPlaced={handleOrderPlaced}
-      />
+      />,
     );
   }
 
@@ -141,8 +153,19 @@ function App() {
     return <Admin onBack={() => handleNavigate("home")} />;
   }
 
+  if (currentView === "blog") {
+    return renderPublicPage(
+      <Blog
+        cartItems={cartItems}
+        onOpenCart={() => setIsCartOpen(true)}
+        onNavigate={handleNavigate}
+        onBrandReset={handleHomeReset}
+      />,
+    );
+  }
+
   if (["nosotros", "preguntas", "politicas", "envios", "contacto"].includes(currentView)) {
-    return (
+    return renderPublicPage(
       <InfoPage
         slug={currentView}
         cartItems={cartItems}
@@ -150,11 +173,11 @@ function App() {
         onNavigate={handleNavigate}
         onBrandReset={handleHomeReset}
         activeView={currentView}
-      />
+      />,
     );
   }
 
-  return (
+  return renderPublicPage(
     <Home
       key={homeSession}
       cartItems={cartItems}
@@ -167,7 +190,7 @@ function App() {
       activeView="home"
       onUpdateQuantity={updateCartItemQuantity}
       onRemoveItem={removeFromCart}
-    />
+    />,
   );
 }
 

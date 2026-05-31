@@ -5,7 +5,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///database.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER")
+    WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "18294475730")
 
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))

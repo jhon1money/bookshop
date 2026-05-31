@@ -1,6 +1,28 @@
-import { useState } from "react";
-import { createOrder } from "../services/api";
+import { useEffect, useMemo, useState } from "react";
+import Footer from "../components/Footer";
+import { createOrder, quoteOrder } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
+
+function calculateLocalSummary(cartItems) {
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = item.oferta && item.precio_oferta ? Number(item.precio_oferta) : Number(item.precio);
+    return sum + price * item.quantity;
+  }, 0);
+  const totalUnits = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const discountRate = totalUnits >= 3 ? 0.2 : totalUnits === 2 ? 0.15 : 0;
+  const discountAmount = subtotal * discountRate;
+
+  return {
+    subtotal,
+    total_units: totalUnits,
+    discount_rate: discountRate,
+    discount_amount: discountAmount,
+    promo_discount_amount: 0,
+    promotions: [],
+    total: subtotal - discountAmount,
+    isEstimate: true,
+  };
+}
 
 function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, onClearCart, onOrderPlaced }) {
   const [customerData, setCustomerData] = useState({
@@ -13,16 +35,47 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
+  const [checkoutSummary, setCheckoutSummary] = useState(() => calculateLocalSummary(cartItems));
 
   usePageMeta({
     title: "Carrito",
     description: "Confirma tu pedido de libros físicos con checkout corto, WhatsApp y correo de seguimiento.",
+    canonicalPath: "/carrito",
+    robots: "noindex, follow",
   });
 
-  const total = cartItems.reduce((sum, item) => {
-    const price = item.oferta && item.precio_oferta ? Number(item.precio_oferta) : Number(item.precio);
-    return sum + price * item.quantity;
-  }, 0);
+  const localSummary = useMemo(() => calculateLocalSummary(cartItems), [cartItems]);
+  const summary = checkoutSummary || localSummary;
+
+  useEffect(() => {
+    if (!cartItems.length) {
+      setCheckoutSummary(calculateLocalSummary([]));
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    quoteOrder({
+      items: cartItems.map((item) => ({
+        book_id: item.id,
+        quantity: item.quantity,
+      })),
+    })
+      .then((response) => {
+        if (!cancelled) {
+          setCheckoutSummary(response.data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCheckoutSummary(localSummary);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cartItems, localSummary]);
 
   async function handleSubmitOrder(event) {
     event.preventDefault();
@@ -47,8 +100,9 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       });
 
       setFeedback(
-        `Pedido ${response.data.order_number} creado correctamente.${response.data.email_sent ? " También enviamos un correo de confirmación." : ""}`,
+        `Pedido ${response.data.order_number} creado.${response.data.email_sent ? " Correo enviado." : ""}`,
       );
+      setCheckoutSummary(response.data);
       setCustomerWhatsappLink(response.data.customer_whatsapp_link || "");
 
       if (response.data.owner_whatsapp_link || response.data.whatsapp_link) {
@@ -125,12 +179,35 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 Te contactaremos por WhatsApp para confirmar disponibilidad, entrega y forma de pago.
               </p>
               <div className="summary-row">
-                <span>Productos</span>
-                <strong>{cartItems.length}</strong>
+                <span>Libros</span>
+                <strong>{summary.total_units || 0}</strong>
               </div>
               <div className="summary-row">
+                <span>Subtotal</span>
+                <strong>RD$ {Number(summary.subtotal || 0).toFixed(2)}</strong>
+              </div>
+              {Number(summary.promo_discount_amount || 0) > 0 ? (
+                <div className="summary-row discount-row">
+                  <span>Promo 2x1</span>
+                  <strong>-RD$ {Number(summary.promo_discount_amount).toFixed(2)}</strong>
+                </div>
+              ) : null}
+              {Number(summary.discount_amount || 0) > 0 ? (
+                <div className="summary-row discount-row">
+                  <span>Descuento {Math.round(Number(summary.discount_rate || 0) * 100)}%</span>
+                  <strong>-RD$ {Number(summary.discount_amount).toFixed(2)}</strong>
+                </div>
+              ) : null}
+              {summary.promotions?.length ? (
+                <div className="checkout-promo-list">
+                  {summary.promotions.map((promotion) => (
+                    <span key={promotion.label}>{promotion.label}</span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="summary-row summary-total-row">
                 <span>Total</span>
-                <strong>RD$ {total.toFixed(2)}</strong>
+                <strong>RD$ {Number(summary.total || 0).toFixed(2)}</strong>
               </div>
 
               <form className="checkout-form" onSubmit={handleSubmitOrder}>
@@ -211,7 +288,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 <div className="checkout-submit-bar">
                   <div className="checkout-submit-copy">
                     <span>Total</span>
-                    <strong>RD$ {total.toFixed(2)}</strong>
+                    <strong>RD$ {Number(summary.total || 0).toFixed(2)}</strong>
                   </div>
                   <button type="submit" className="primary-button checkout-submit-button" disabled={submitting}>
                     {submitting ? "Procesando..." : "Confirmar pedido"}
@@ -231,6 +308,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
           </div>
         )}
       </section>
+      <Footer onNavigate={onNavigate} />
     </main>
   );
 }
