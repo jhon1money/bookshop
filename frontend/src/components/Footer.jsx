@@ -13,26 +13,12 @@ function Footer({ onNavigate }) {
   }
 
   return (
-    <footer className="site-footer" aria-labelledby="footer-title">
-      <div className="container footer-cta">
-        <div>
-          <p className="footer-kicker">Librería SJ</p>
-          <h2 id="footer-title">Encuentra tu próxima lectura con ayuda real</h2>
-          <p>
-            Te orientamos por WhatsApp, confirmamos disponibilidad y damos seguimiento a cada orden
-            para que comprar libros físicos sea claro, rápido y confiable.
-          </p>
-        </div>
-        <a className="footer-whatsapp-button" href={whatsappLink} target="_blank" rel="noreferrer">
-          Comprar por WhatsApp
-        </a>
-      </div>
-
+    <footer className="site-footer" aria-labelledby="footer-brand-title">
       <div className="container footer-grid">
         <section className="footer-brand">
           <span className="footer-brand-mark">SJ</span>
           <div>
-            <h3>Librería SJ</h3>
+            <h3 id="footer-brand-title">Librería SJ</h3>
             <p>
               Catálogo curado de libros físicos, novedades y recomendaciones para lectores que
               quieren comprar con seguridad y buen acompañamiento.
