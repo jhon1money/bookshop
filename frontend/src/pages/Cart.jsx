@@ -16,7 +16,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
 
   usePageMeta({
     title: "Carrito",
-    description: "Confirma tu pedido de libros fisicos con checkout corto, WhatsApp y correo de seguimiento.",
+    description: "Confirma tu pedido de libros físicos con checkout corto, WhatsApp y correo de seguimiento.",
   });
 
   const total = cartItems.reduce((sum, item) => {
@@ -28,7 +28,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
     event.preventDefault();
 
     if (!cartItems.length) {
-      setError("Tu carrito esta vacio.");
+      setError("Tu carrito está vacío.");
       return;
     }
 
@@ -47,7 +47,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       });
 
       setFeedback(
-        `Pedido ${response.data.order_number} creado correctamente.${response.data.email_sent ? " Tambien enviamos un correo de confirmacion." : ""}`,
+        `Pedido ${response.data.order_number} creado correctamente.${response.data.email_sent ? " También enviamos un correo de confirmación." : ""}`,
       );
       setCustomerWhatsappLink(response.data.customer_whatsapp_link || "");
 
@@ -80,13 +80,18 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
 
         {cartItems.length === 0 ? (
           <div className="status-box">
-            Tu carrito esta vacio. Vuelve al catalogo y agrega algunos libros.
+            Tu carrito está vacío. Vuelve al catálogo y agrega algunos libros.
           </div>
         ) : (
           <div className="cart-layout">
             <section className="cart-list">
               {cartItems.map((item) => (
                 <article className="cart-line" key={item.id}>
+                  <img
+                    src={item.imagen || "https://placehold.co/120x160/e6dccd/5e4632?text=Libro"}
+                    alt=""
+                    className="cart-line-thumb"
+                  />
                   <div className="cart-line-copy">
                     <h3>{item.titulo}</h3>
                     <p>{item.autor}</p>
@@ -116,6 +121,9 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
             <aside className="checkout-card">
               <p className="section-label">Checkout</p>
               <h2>Finaliza tu pedido</h2>
+              <p className="checkout-note">
+                Te contactaremos por WhatsApp para confirmar disponibilidad, entrega y forma de pago.
+              </p>
               <div className="summary-row">
                 <span>Productos</span>
                 <strong>{cartItems.length}</strong>
@@ -143,7 +151,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                   </label>
 
                   <label className="checkout-field">
-                    <span>Correo electronico</span>
+                    <span>Correo electrónico</span>
                     <input
                       type="email"
                       value={customerData.customer_email}
@@ -158,7 +166,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                   </label>
 
                   <label className="checkout-field">
-                    <span>Telefono</span>
+                    <span>Teléfono</span>
                     <input
                       type="tel"
                       value={customerData.customer_phone}
@@ -174,7 +182,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 </div>
 
                 <label className="checkout-field">
-                  <span>Direccion de entrega</span>
+                  <span>Dirección de entrega</span>
                   <textarea
                     rows="3"
                     value={customerData.customer_address}
@@ -216,7 +224,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                   Vaciar carrito
                 </button>
                 <button type="button" className="secondary-button" onClick={() => onNavigate("politicas")}>
-                  Ver politicas
+                  Ver políticas
                 </button>
               </div>
             </aside>

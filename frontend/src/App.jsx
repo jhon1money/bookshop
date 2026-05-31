@@ -25,8 +25,13 @@ function App() {
   const [currentView, setCurrentView] = useState(() => getViewFromPathname(window.location.pathname));
   const [homeSession, setHomeSession] = useState(0);
   const [cartItems, setCartItems] = useState(() => {
-    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-    return storedCart ? JSON.parse(storedCart) : [];
+    try {
+      const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+      return storedCart ? JSON.parse(storedCart) : [];
+    } catch {
+      localStorage.removeItem(CART_STORAGE_KEY);
+      return [];
+    }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -144,6 +149,7 @@ function App() {
         onOpenCart={() => setIsCartOpen(true)}
         onNavigate={handleNavigate}
         onBrandReset={handleHomeReset}
+        activeView={currentView}
       />
     );
   }
@@ -158,6 +164,7 @@ function App() {
       onOpenCart={() => setIsCartOpen(true)}
       onNavigate={handleNavigate}
       onBrandReset={handleHomeReset}
+      activeView="home"
       onUpdateQuantity={updateCartItemQuantity}
       onRemoveItem={removeFromCart}
     />

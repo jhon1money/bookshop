@@ -14,23 +14,23 @@ const INFO_SECTION_MAP = {
 const PAGE_META = {
   nosotros: {
     title: "Nosotros",
-    description: "Conoce la historia y la propuesta de nuestra libreria de libros fisicos.",
+    description: "Conoce la historia y la propuesta de nuestra librería de libros físicos.",
   },
   preguntas: {
     title: "Preguntas frecuentes",
-    description: "Resuelve dudas sobre ordenes, entregas y seguimiento de libros fisicos.",
+    description: "Resuelve dudas sobre órdenes, entregas y seguimiento de libros físicos.",
   },
   politicas: {
-    title: "Politicas",
-    description: "Consulta politicas de compra, stock, confirmacion y atencion postventa.",
+    title: "Políticas",
+    description: "Consulta políticas de compra, stock, confirmación y atención postventa.",
   },
   envios: {
-    title: "Envios",
-    description: "Informacion de envios, entregas y coordinacion de libros fisicos.",
+    title: "Envíos",
+    description: "Información de envíos, entregas y coordinación de libros físicos.",
   },
   contacto: {
     title: "Contacto",
-    description: "Contacta a BookShop por WhatsApp o correo para ayuda y seguimiento.",
+    description: "Contacta a Librería SJ por WhatsApp o correo para ayuda y seguimiento.",
   },
 };
 
@@ -59,7 +59,7 @@ function renderSectionItems(items) {
   );
 }
 
-function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset }) {
+function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activeView }) {
   const [sections, setSections] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -89,6 +89,21 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset }) {
     ? "home"
     : section?.cta_link?.replace("/", "") || "home";
 
+  function handleCtaNavigation() {
+    if (section?.cta_link?.startsWith("/#")) {
+      const sectionId = section.cta_link.replace("/#", "");
+      onNavigate("home");
+      window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
+          document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      });
+      return;
+    }
+
+    onNavigate(ctaView);
+  }
+
   return (
     <main className="page-shell">
       <Navbar
@@ -96,6 +111,7 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset }) {
         onOpenCart={onOpenCart}
         onNavigate={onNavigate}
         onBrandReset={onBrandReset}
+        activeView={activeView}
       />
 
       <section className="container info-page-shell">
@@ -116,13 +132,13 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset }) {
                 <button
                   type="button"
                   className="primary-button"
-                  onClick={() => onNavigate(ctaView)}
+                  onClick={handleCtaNavigation}
                 >
                   {section.cta_text || "Volver a la tienda"}
                 </button>
               ) : null}
               <button type="button" className="secondary-button" onClick={() => onNavigate("home")}>
-                Ir al catalogo
+                Ir al catálogo
               </button>
             </div>
           </>

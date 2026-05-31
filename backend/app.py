@@ -70,16 +70,16 @@ def ensure_book_schema():
 
 SITE_SECTION_DEFAULTS = {
     "hero": {
-        "title": "Descubre tu proxima lectura sin salir de casa",
-        "subtitle": "Libreria online",
-        "body": "Explora libros fisicos, novedades editoriales y recomendaciones elegidas para lectores exigentes.",
+        "title": "Descubre tu próxima lectura sin salir de casa",
+        "subtitle": "Librería online",
+        "body": "Explora libros físicos, novedades editoriales y recomendaciones elegidas para lectores exigentes.",
         "cta_text": "Ver novedades",
         "cta_link": "/#catalogo",
         "items_json": json.dumps(
             [
-                "Envios nacionales de libros fisicos",
-                "Atencion rapida por WhatsApp",
-                "Confirmacion por correo y numero de orden",
+                "Envíos nacionales de libros físicos",
+                "Atención rápida por WhatsApp",
+                "Confirmación por correo y número de orden",
             ],
             ensure_ascii=True,
         ),
@@ -87,7 +87,7 @@ SITE_SECTION_DEFAULTS = {
     "banner_primary": {
         "title": "Colecciones curadas cada semana",
         "subtitle": "Banner principal",
-        "body": "Agrupa tus libros por tematica, autor, saga o temporada para guiar mejor la compra.",
+        "body": "Agrupa tus libros por temática, autor, saga o temporada para guiar mejor la compra.",
         "cta_text": "Explorar destacados",
         "cta_link": "/#destacados",
         "items_json": json.dumps(
@@ -96,27 +96,27 @@ SITE_SECTION_DEFAULTS = {
         ),
     },
     "banner_secondary": {
-        "title": "Compra libros fisicos con seguimiento claro",
+        "title": "Compra libros físicos con seguimiento claro",
         "subtitle": "Banner secundario",
-        "body": "Cada pedido genera confirmacion por WhatsApp y correo con el resumen de tu compra.",
-        "cta_text": "Ver politicas",
+        "body": "Cada pedido genera confirmación por WhatsApp y correo con el resumen de tu compra.",
+        "cta_text": "Ver políticas",
         "cta_link": "/politicas",
         "items_json": json.dumps(
-            ["Orden por WhatsApp", "Correo de confirmacion", "Atencion personalizada"],
+            ["Orden por WhatsApp", "Correo de confirmación", "Atención personalizada"],
             ensure_ascii=True,
         ),
     },
     "about": {
-        "title": "Sobre BookShop",
+        "title": "Sobre Librería SJ",
         "subtitle": "Nosotros",
-        "body": "Somos una libreria enfocada en libros fisicos, con recomendaciones editoriales, atencion cercana y seguimiento real de cada pedido.",
+        "body": "Somos una librería enfocada en libros físicos, con recomendaciones editoriales, atención cercana y seguimiento real de cada pedido.",
         "cta_text": "Contactar",
         "cta_link": "/contacto",
         "items_json": json.dumps(
             [
-                "Libros fisicos originales",
-                "Catalogo curado por categorias",
-                "Atencion por WhatsApp y correo",
+                "Libros físicos originales",
+                "Catálogo curado por categorías",
+                "Atención por WhatsApp y correo",
             ],
             ensure_ascii=True,
         ),
@@ -124,38 +124,38 @@ SITE_SECTION_DEFAULTS = {
     "faq": {
         "title": "Preguntas frecuentes",
         "subtitle": "Ayuda",
-        "body": "Respuestas rapidas para compra, envios y seguimiento.",
+        "body": "Respuestas rápidas para compra, envíos y seguimiento.",
         "items_json": json.dumps(
             [
-                {"title": "Como confirmo mi pedido?", "body": "Recibiras un numero de orden y el mensaje listo para WhatsApp."},
-                {"title": "Venden libros digitales?", "body": "No. La tienda esta enfocada solo en libros fisicos."},
-                {"title": "Puedo pedir varios libros juntos?", "body": "Si, el carrito permite combinar varios titulos en una sola orden."},
+                {"title": "¿Cómo confirmo mi pedido?", "body": "Recibirás un número de orden y el mensaje listo para WhatsApp."},
+                {"title": "¿Venden libros digitales?", "body": "No. La tienda está enfocada solo en libros físicos."},
+                {"title": "¿Puedo pedir varios libros juntos?", "body": "Sí, el carrito permite combinar varios títulos en una sola orden."},
             ],
             ensure_ascii=True,
         ),
     },
     "policies": {
-        "title": "Politicas de compra",
-        "subtitle": "Politicas",
-        "body": "Informacion basica sobre confirmacion, stock y atencion postventa.",
+        "title": "Políticas de compra",
+        "subtitle": "Políticas",
+        "body": "Información básica sobre confirmación, stock y atención postventa.",
         "items_json": json.dumps(
             [
-                "Las ordenes se confirman segun disponibilidad real de inventario.",
+                "Las órdenes se confirman según disponibilidad real de inventario.",
                 "Los precios y ofertas pueden variar por campaña.",
-                "Los libros archivados salen de la tienda publica pero conservan historial administrativo.",
+                "Los libros archivados salen de la tienda pública pero conservan historial administrativo.",
             ],
             ensure_ascii=True,
         ),
     },
     "shipping": {
-        "title": "Envios y entregas",
-        "subtitle": "Envios",
-        "body": "Coordinamos entregas de libros fisicos dentro de Republica Dominicana.",
+        "title": "Envíos y entregas",
+        "subtitle": "Envíos",
+        "body": "Coordinamos entregas de libros físicos dentro de República Dominicana.",
         "items_json": json.dumps(
             [
                 "Entrega local coordinada por WhatsApp",
-                "Seguimiento por numero de orden",
-                "Tiempo estimado segun zona y disponibilidad",
+                "Seguimiento por número de orden",
+                "Tiempo estimado según zona y disponibilidad",
             ],
             ensure_ascii=True,
         ),
@@ -168,7 +168,7 @@ SITE_SECTION_DEFAULTS = {
             [
                 {"title": "WhatsApp", "body": "829-447-5730"},
                 {"title": "Correo", "body": "Cristofer25suarez@gmail.com"},
-                {"title": "Horario", "body": "Lunes a sabado de 9:00am a 9:00pm"},
+                {"title": "Horario", "body": "Lunes a sábado de 9:00am a 9:00pm"},
             ],
             ensure_ascii=True,
         ),
@@ -304,7 +304,7 @@ def serialize_admin_book(book):
     active_price = book.precio_oferta if book.oferta and book.precio_oferta else book.precio
     return {
         **serialize_book(book),
-        "category_name": book.category.nombre if book.category else "Sin categoria",
+        "category_name": book.category.nombre if book.category else "Sin categoría",
         "created_at": book.created_at.isoformat() if book.created_at else None,
         "sold_units": sold_units,
         "inventory_value": round((book.stock or 0) * float(active_price or 0), 2),
@@ -390,9 +390,9 @@ def build_whatsapp_message(order, items):
         f"Hola, quiero confirmar mi pedido {order.order_number}.",
         "",
         f"Cliente: {order.customer_name}",
-        f"Telefono: {order.customer_phone}",
+        f"Teléfono: {order.customer_phone}",
         f"Correo: {order.customer_email}",
-        f"Direccion: {order.customer_address}",
+        f"Dirección: {order.customer_address}",
         "",
         "Libros solicitados:",
     ]
@@ -430,7 +430,7 @@ def build_customer_whatsapp_link(order):
             f"Hola {order.customer_name},",
             f"Te damos seguimiento a tu pedido {order.order_number}.",
             "En breve te confirmaremos disponibilidad, entrega y siguientes pasos.",
-            "Gracias por comprar libros fisicos con BookShop.",
+            "Gracias por comprar libros físicos con Librería SJ.",
         ]
     )
     return f"https://wa.me/{customer_phone}?text={quote(message)}"
@@ -462,9 +462,9 @@ def send_order_email(order, items):
         [
             "",
             f"Total: RD$ {order.total:.2f}",
-            f"Direccion de entrega: {order.customer_address}",
+            f"Dirección de entrega: {order.customer_address}",
             "",
-            "Gracias por comprar libros fisicos con nosotros.",
+            "Gracias por comprar libros físicos con nosotros.",
         ]
     )
 
@@ -476,7 +476,7 @@ def send_order_email(order, items):
     )
 
     message = EmailMessage()
-    message["Subject"] = f"Confirmacion de pedido {order.order_number}"
+    message["Subject"] = f"Confirmación de pedido {order.order_number}"
     message["From"] = smtp_from
     message["To"] = order.customer_email
     message.set_content("\n".join(email_body))
@@ -487,8 +487,8 @@ def send_order_email(order, items):
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fffdf8;border-radius:18px;border:1px solid #ebe2d2;">
               <tr>
                 <td style="padding:22px 24px;background:#1a1a1a;color:#fffdf8;">
-                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;">BookShop</div>
-                  <div style="margin-top:6px;font-size:13px;line-height:1.5;opacity:0.9;">Confirmacion de pedido de libros fisicos</div>
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;">Librería SJ</div>
+                  <div style="margin-top:6px;font-size:13px;line-height:1.5;opacity:0.9;">Confirmación de pedido de libros físicos</div>
                 </td>
               </tr>
               <tr>
@@ -514,12 +514,12 @@ def send_order_email(order, items):
                     </tr>
                     <tr>
                       <td colspan="2" style="padding:0 16px 16px;font-size:14px;line-height:1.6;color:#555;">
-                        Direccion de entrega: {order.customer_address}
+                        Dirección de entrega: {order.customer_address}
                       </td>
                     </tr>
                   </table>
                   <p style="margin:18px 0 0;line-height:1.7;color:#555;font-size:14px;">
-                    Gracias por confiar en nuestra libreria. Te escribiremos para confirmar disponibilidad y entrega.
+                    Gracias por confiar en nuestra librería. Te escribiremos para confirmar disponibilidad y entrega.
                   </p>
                 </td>
               </tr>
@@ -893,7 +893,7 @@ def delete_category(current_user, id):
             return json_response(
                 400,
                 True,
-                "No se puede eliminar esta categoria porque aun tiene libros en stock.",
+                "No se puede eliminar esta categoría porque aún tiene libros en stock.",
             )
 
         books_to_release = Book.query.filter(Book.category_id == category.id).all()
@@ -1181,13 +1181,13 @@ def export_orders(current_user):
         writer = csv.writer(output)
         writer.writerow(
             [
-                "Numero de orden",
+                "Número de orden",
                 "Fecha",
                 "Estado",
                 "Cliente",
                 "Correo",
-                "Telefono",
-                "Direccion",
+                "Teléfono",
+                "Dirección",
                 "Total RD$",
                 "Items",
             ]
@@ -1250,10 +1250,10 @@ def create_order():
             if not book:
                 return json_response(404, True, f"Book with id {book_id} not found")
             if not bool(getattr(book, "active", True)):
-                return json_response(400, True, f"{book.titulo} ya no esta disponible en la tienda")
+                return json_response(400, True, f"{book.titulo} ya no está disponible en la tienda")
 
             if book.stock < quantity:
-                return json_response(400, True, f"Not enough stock for {book.titulo}")
+                return json_response(400, True, f"No hay stock suficiente para {book.titulo}")
 
             unit_price = float(book.precio_oferta) if book.oferta and book.precio_oferta else float(book.precio)
             line_total = unit_price * quantity

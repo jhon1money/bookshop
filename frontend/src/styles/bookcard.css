@@ -1,183 +1,220 @@
 .book-card {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 18px;
-  border: 1px solid rgba(31, 61, 43, 0.08);
-  border-radius: 22px;
-  background: #fffdf8;
-  box-shadow: 0 14px 30px rgba(26, 26, 26, 0.04);
-  cursor: pointer;
-  transition:
-    transform 0.28s ease,
-    box-shadow 0.28s ease,
-    border-color 0.28s ease;
+  gap: 0.9rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .book-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(31, 61, 43, 0.14);
-  box-shadow: 0 18px 34px rgba(26, 26, 26, 0.08);
+  transform: translateY(-3px);
+  border-color: rgba(37, 84, 73, 0.22);
+  box-shadow: var(--shadow-medium);
 }
 
-.book-card:focus-visible {
-  outline: 3px solid rgba(31, 61, 43, 0.16);
-  outline-offset: 3px;
-}
-
-.book-badge-row {
+.book-badge-row,
+.modal-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
-}
-
-.book-image-shell {
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  background: #f1ece0;
-  aspect-ratio: 3 / 4;
-  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.45rem;
 }
 
 .book-badge,
+.book-flag-chip,
 .stock-pill {
+  min-height: 1.7rem;
   display: inline-flex;
   align-items: center;
-  padding: 7px 11px;
+  padding: 0.32rem 0.55rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 750;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .book-badge {
-  background: rgba(178, 30, 30, 0.12);
-  color: #b21e1e;
+  background: #f7ded9;
+  color: #9c3129;
+}
+
+.book-flag-chip {
+  background: #eaf0ef;
+  color: #255449;
 }
 
 .stock-pill.in-stock {
-  background: rgba(15, 79, 47, 0.14);
-  color: #0f4f2f;
+  background: #e2f3e9;
+  color: #25633b;
 }
 
 .stock-pill.out-stock {
-  background: rgba(107, 107, 107, 0.14);
-  color: #5f5f5f;
+  background: #ece8e1;
+  color: #71675a;
+}
+
+.book-media-button,
+.book-title-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-media-button:focus-visible,
+.book-title-button:focus-visible,
+.book-button:focus-visible,
+.book-detail-button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.book-image-shell {
+  position: relative;
+  width: 100%;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: #ede5da;
+  aspect-ratio: 3 / 4;
 }
 
 .book-image {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
   object-position: center;
-  border-radius: 18px;
-  transition: transform 0.35s ease;
+  transition: transform 220ms ease;
 }
 
 .book-card:hover .book-image {
-  transform: scale(1.03);
+  transform: scale(1.025);
 }
 
 .book-content {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
   flex: 1;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
-.book-title {
-  color: #1a1a1a;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.26rem;
-  line-height: 1.1;
-  font-weight: 700;
+.book-title,
+.book-title-button {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 750;
+  line-height: 1.18;
+}
+
+.book-title-button:hover {
+  color: var(--green);
 }
 
 .book-author {
-  color: #6b6b6b;
-  font-size: 0.95rem;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .book-prices {
   display: flex;
-  align-items: baseline;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
 }
 
 .book-price,
 .price-offer {
-  font-size: 1.08rem;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.price-original {
-  color: #8e8e8e;
-  text-decoration: line-through;
-  font-weight: 600;
+  color: var(--ink);
+  font-size: 1.04rem;
+  font-weight: 800;
 }
 
 .price-offer {
-  color: #1a1a1a;
+  color: #9c3129;
+}
+
+.price-original {
+  color: #81766a;
+  font-weight: 700;
+  text-decoration: line-through;
+}
+
+.book-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.book-button,
+.book-detail-button {
+  min-height: 2.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
 }
 
 .book-button {
-  margin-top: auto;
-  padding: 12px 14px;
-  border: 1px solid #1a1a1a;
-  border-radius: 14px;
-  background: #1a1a1a;
-  color: #f5f1e6;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    transform 0.22s ease,
-    background-color 0.22s ease,
-    border-color 0.22s ease,
-    color 0.22s ease,
-    box-shadow 0.22s ease;
+  background: var(--ink);
+  color: #fffaf2;
 }
 
-.book-button:hover {
+.book-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: #000000;
-  border-color: #000000;
-  box-shadow: 0 12px 24px rgba(26, 26, 26, 0.12);
+  box-shadow: var(--shadow-medium);
 }
 
 .book-button:disabled {
-  opacity: 0.5;
+  opacity: 0.52;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
-@media (max-width: 720px) {
-  .book-card {
-    gap: 10px;
-    padding: 12px;
-    border-radius: 18px;
-  }
+.book-detail-button {
+  border-color: var(--border-strong);
+  background: #fffaf2;
+  color: var(--ink);
+}
 
-  .book-image-shell,
-  .book-image {
-    border-radius: 14px;
+.book-detail-button:hover {
+  color: var(--green);
+  border-color: rgba(37, 84, 73, 0.28);
+}
+
+@media (max-width: 560px) {
+  .book-card {
+    gap: 0.7rem;
+    padding: 0.65rem;
   }
 
   .book-badge,
+  .book-flag-chip,
   .stock-pill {
-    padding: 5px 9px;
     font-size: 0.68rem;
-    max-width: 100%;
+    padding: 0.28rem 0.45rem;
   }
 
-  .book-title {
+  .book-title,
+  .book-title-button {
     font-size: 1rem;
   }
 
@@ -185,21 +222,7 @@
     font-size: 0.82rem;
   }
 
-  .book-price,
-  .price-offer,
-  .price-original {
-    font-size: 0.95rem;
-  }
-
-  .book-prices {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .book-button {
-    padding: 10px 12px;
-    border-radius: 12px;
-    font-size: 0.88rem;
+  .book-card-actions {
+    grid-template-columns: 1fr;
   }
 }

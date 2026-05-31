@@ -52,8 +52,8 @@ const SITE_SECTION_OPTIONS = [
   { key: "banner_secondary", label: "Banner secundario" },
   { key: "about", label: "Nosotros" },
   { key: "faq", label: "Preguntas frecuentes" },
-  { key: "policies", label: "Politicas" },
-  { key: "shipping", label: "Envios" },
+  { key: "policies", label: "Políticas" },
+  { key: "shipping", label: "Envíos" },
   { key: "contact", label: "Contacto" },
 ];
 
@@ -136,7 +136,7 @@ function Admin({ onBack }) {
 
   usePageMeta({
     title: "Admin",
-    description: "Dashboard administrativo para controlar ventas, inventario, contenido y ordenes de la libreria.",
+    description: "Dashboard administrativo para controlar ventas, inventario, contenido y órdenes de la librería.",
   });
 
   const stats = dashboard?.stats || {};
@@ -287,7 +287,7 @@ function Admin({ onBack }) {
             latestNotificationAtRef.current = Date.now();
             setSuccess(message);
             if ("Notification" in window && Notification.permission === "granted") {
-              new Notification("BookShop Admin", {
+              new Notification("Librería SJ Admin", {
                 body: message,
               });
             }
@@ -328,10 +328,10 @@ function Admin({ onBack }) {
       localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(response.data.user));
       setToken(response.data.token);
       setAdminUser(response.data.user);
-      setSuccess("Sesion iniciada correctamente.");
+      setSuccess("Sesión iniciada correctamente.");
       setLoginForm({ username: "", password: "" });
     } catch (loginError) {
-      setError(loginError.message || "No se pudo iniciar sesion");
+      setError(loginError.message || "No se pudo iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -369,7 +369,7 @@ function Admin({ onBack }) {
       link.download = "ordenes-bookshop.csv";
       link.click();
       URL.revokeObjectURL(fileUrl);
-      setSuccess("Reporte de ordenes exportado para Excel.");
+      setSuccess("Reporte de órdenes exportado para Excel.");
     } catch (exportError) {
       setError(exportError.message || "No se pudo exportar el reporte");
     }
@@ -378,7 +378,7 @@ function Admin({ onBack }) {
   function handlePrintOrdersPdf() {
     const reportWindow = window.open("", "_blank", "noopener,noreferrer,width=1100,height=800");
     if (!reportWindow) {
-      setError("Tu navegador bloqueo la ventana de impresion.");
+      setError("Tu navegador bloqueó la ventana de impresión.");
       return;
     }
 
@@ -398,17 +398,17 @@ function Admin({ onBack }) {
     reportWindow.document.write(`
       <html>
         <head>
-          <title>Reporte de ordenes | BookShop</title>
+          <title>Reporte de órdenes | Librería SJ</title>
           <style>
             body { font-family: Arial, sans-serif; color: #1a1a1a; padding: 32px; }
             h1 { font-family: Georgia, serif; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
-            th { color: #6b6b6b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+            th { color: #6b6b6b; font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
           </style>
         </head>
         <body>
-          <h1>Reporte de ordenes BookShop</h1>
+          <h1>Reporte de órdenes Librería SJ</h1>
           <p>Generado el ${new Date().toLocaleString("es-DO")}</p>
           <table>
             <thead>
@@ -466,7 +466,7 @@ function Admin({ onBack }) {
       }
       setSuccess(
         response.message === "Book archived from catalog"
-          ? "El libro tenia historial de ordenes y fue archivado para salir de la tienda sin perder ventas."
+          ? "El libro tenía historial de órdenes y fue archivado para salir de la tienda sin perder ventas."
           : "Libro eliminado correctamente.",
       );
       await loadAdminData(token, orderFilters);
@@ -483,10 +483,10 @@ function Admin({ onBack }) {
     try {
       const response = await createAdminCategory(token, { nombre: categoryName });
       setCategoryName("");
-      setSuccess(response.message || "Categoria creada correctamente.");
+      setSuccess(response.message || "Categoría creada correctamente.");
       await loadAdminData(token, orderFilters);
     } catch (categoryError) {
-      setError(categoryError.message || "No se pudo crear la categoria");
+      setError(categoryError.message || "No se pudo crear la categoría");
     }
   }
 
@@ -521,10 +521,10 @@ function Admin({ onBack }) {
         items,
         is_active: sectionForm.is_active,
       });
-      setSuccess(response.message || "Seccion guardada correctamente.");
+      setSuccess(response.message || "Sección guardada correctamente.");
       await loadAdminData(token, orderFilters, dashboardFilters);
     } catch (sectionError) {
-      setError(sectionError.message || "No se pudo guardar la seccion");
+      setError(sectionError.message || "No se pudo guardar la sección");
     }
   }
 
@@ -534,10 +534,10 @@ function Admin({ onBack }) {
 
     try {
       const response = await deleteAdminCategory(token, categoryId);
-      setSuccess(response.message || "Categoria eliminada correctamente.");
+      setSuccess(response.message || "Categoría eliminada correctamente.");
       await loadAdminData(token, orderFilters);
     } catch (categoryError) {
-      setError(categoryError.message || "No se pudo eliminar la categoria");
+      setError(categoryError.message || "No se pudo eliminar la categoría");
     }
   }
 
@@ -548,15 +548,15 @@ function Admin({ onBack }) {
           <div className="admin-auth-panel">
             <div className="cart-page-header">
               <div>
-                <p className="section-label">Administracion</p>
-                <h1>Panel de administracion</h1>
+                <p className="section-label">Administración</p>
+                <h1>Panel de administración</h1>
                 <p className="hero-copy">
-                  Controla ventas, inventario, estados de ordenes y crecimiento mensual de la
-                  libreria fisica en pesos dominicanos desde un solo lugar.
+                  Controla ventas, inventario, estados de órdenes y crecimiento mensual de la
+                  librería física en pesos dominicanos desde un solo lugar.
                 </p>
               </div>
               <button type="button" className="nav-link" onClick={onBack}>
-                Volver al catalogo
+                Volver al catálogo
               </button>
             </div>
 
@@ -578,7 +578,7 @@ function Admin({ onBack }) {
               </label>
 
               <label className="checkout-field">
-                <span>Contrasena</span>
+                <span>Contraseña</span>
                 <input
                   type="password"
                   value={loginForm.password}
@@ -611,11 +611,11 @@ function Admin({ onBack }) {
       <section className="container admin-shell">
         <div className="admin-topbar">
           <div>
-            <p className="section-label">Administracion</p>
-            <h1>Centro de control de la libreria</h1>
+            <p className="section-label">Administración</p>
+            <h1>Centro de control de la librería</h1>
             <p className="hero-copy">
-              Bienvenido, {adminUser?.username || "admin"}. Supervisa ventas, ordenes,
-              inventario, graficas y catalogo fisico con una vista clara, moderna y organizada.
+              Bienvenido, {adminUser?.username || "admin"}. Supervisa ventas, órdenes,
+              inventario, gráficas y catálogo físico con una vista clara, moderna y organizada.
             </p>
           </div>
 
@@ -627,7 +627,7 @@ function Admin({ onBack }) {
               Ver tienda
             </button>
             <button type="button" className="checkout-submit admin-logout-button" onClick={handleLogout}>
-              Cerrar sesion
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -635,10 +635,10 @@ function Admin({ onBack }) {
         <div className="admin-tabs">
           {[
             { id: "dashboard", label: "Dashboard" },
-            { id: "orders", label: "Ordenes" },
+            { id: "orders", label: "Órdenes" },
             { id: "inventory", label: "Inventario" },
             { id: "books", label: "Libros" },
-            { id: "categories", label: "Categorias" },
+            { id: "categories", label: "Categorías" },
             { id: "content", label: "Contenido" },
           ].map((tab) => (
             <button
@@ -703,12 +703,12 @@ function Admin({ onBack }) {
                 <span>Ventas acumuladas</span>
                 <strong>{formatCurrency(stats.total_revenue)}</strong>
                 <small>
-                  Mes actual: {formatCurrency(stats.current_month_revenue)} | Variacion:{" "}
+                  Mes actual: {formatCurrency(stats.current_month_revenue)} | Variación:{" "}
                   {formatCurrency(stats.revenue_delta)}
                 </small>
               </article>
               <article className="admin-stat-card">
-                <span>Ordenes</span>
+                <span>Órdenes</span>
                 <strong>{stats.orders_count || 0}</strong>
                 <small>
                   Pendientes: {stats.pending_orders || 0} | Entregadas: {stats.delivered_orders || 0}
@@ -725,7 +725,7 @@ function Admin({ onBack }) {
                 <span>Valor en tienda</span>
                 <strong>{formatCurrency(stats.inventory_value)}</strong>
                 <small>
-                  Categorias activas: {stats.categories_count || 0} | Ordenes del mes:{" "}
+                  Categorías activas: {stats.categories_count || 0} | Órdenes del mes:{" "}
                   {stats.current_month_orders || 0}
                 </small>
               </article>
@@ -734,7 +734,7 @@ function Admin({ onBack }) {
             <div className="admin-panel-card admin-chart-card">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Comparacion mensual</p>
+                  <p className="section-label">Comparación mensual</p>
                   <h2>Ventas por mes</h2>
                 </div>
               </div>
@@ -750,7 +750,7 @@ function Admin({ onBack }) {
                       </div>
                       <strong>{formatCurrency(month.revenue)}</strong>
                       <span>{month.label}</span>
-                      <small>{month.orders} ordenes</small>
+                      <small>{month.orders} órdenes</small>
                     </div>
                   );
                 })}
@@ -761,7 +761,7 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Estados</p>
-                  <h2>Embudo de ordenes</h2>
+                  <h2>Embudo de órdenes</h2>
                 </div>
               </div>
               <div className="admin-status-grid">
@@ -777,7 +777,7 @@ function Admin({ onBack }) {
             <div className="admin-panel-card">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Mas vendidos</p>
+                  <p className="section-label">Más vendidos</p>
                   <h2>Top libros</h2>
                 </div>
               </div>
@@ -798,7 +798,7 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Alertas</p>
-                  <h2>Inventario critico</h2>
+                  <h2>Inventario crítico</h2>
                 </div>
               </div>
               <div className="admin-list">
@@ -822,7 +822,7 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Actividad reciente</p>
-                  <h2>Ultimas ordenes</h2>
+                  <h2>Últimas órdenes</h2>
                 </div>
               </div>
               <div className="admin-table-wrap">
@@ -831,7 +831,7 @@ function Admin({ onBack }) {
                     <tr>
                       <th>Orden</th>
                       <th>Cliente</th>
-                      <th>Telefono</th>
+                      <th>Teléfono</th>
                       <th>Fecha</th>
                       <th>Estado</th>
                       <th>Total</th>
@@ -860,8 +860,8 @@ function Admin({ onBack }) {
             <div className="admin-panel-card admin-panel-span">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Ordenes</p>
-                  <h2>Gestion de estados y seguimiento</h2>
+                  <p className="section-label">Órdenes</p>
+                  <h2>Gestión de estados y seguimiento</h2>
                 </div>
               </div>
 
@@ -930,7 +930,7 @@ function Admin({ onBack }) {
                 </label>
 
                 <button type="submit" className="secondary-button">
-                  Filtrar ordenes
+                  Filtrar órdenes
                 </button>
                 <button type="button" className="secondary-button" onClick={handleExportOrdersCsv}>
                   Exportar Excel
@@ -946,10 +946,10 @@ function Admin({ onBack }) {
                     <div className="admin-order-head">
                       <div>
                         <strong>{order.order_number}</strong>
-                        <span>
+                        <span style={{ marginLeft: "8px" }}>
                           {order.customer_name} | {order.customer_email}
                         </span>
-                        <span>{order.customer_phone || "Sin telefono"}</span>
+                        <span>{order.customer_phone || "Sin teléfono"}</span>
                       </div>
                       <div className="admin-order-meta">
                         <small>{formatDate(order.date)}</small>
@@ -1016,7 +1016,7 @@ function Admin({ onBack }) {
             <div className="admin-panel-card">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Atencion inmediata</p>
+                  <p className="section-label">Atención inmediata</p>
                   <h2>Libros con riesgo</h2>
                 </div>
               </div>
@@ -1024,8 +1024,8 @@ function Admin({ onBack }) {
                 {inventoryHighlights.lowStock.map((book) => (
                   <div key={book.id} className="admin-list-item">
                     <div>
-                      <strong>{book.titulo}</strong>
-                      <span>{book.category_name}</span>
+                      <strong >{book.titulo}</strong>
+                      <span style={{ marginLeft: "8px" }}>{book.category_name}</span>
                     </div>
                     <small>{book.stock} unidades</small>
                   </div>
@@ -1037,7 +1037,7 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Inventario completo</p>
-                  <h2>Catalogo fisico y valor por titulo</h2>
+                  <h2>Catálogo físico y valor por título</h2>
                 </div>
               </div>
               <div className="admin-table-wrap">
@@ -1045,7 +1045,7 @@ function Admin({ onBack }) {
                   <thead>
                     <tr>
                       <th>Libro</th>
-                      <th>Categoria</th>
+                      <th>Categoría</th>
                       <th>Stock</th>
                       <th>Vendidos</th>
                       <th>Valor</th>
@@ -1076,16 +1076,16 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">{editingBookId ? "Editar libro" : "Nuevo libro"}</p>
-                  <h2>{editingBookId ? "Actualizar ficha del libro" : "Agregar libro al catalogo"}</h2>
+                  <h2>{editingBookId ? "Actualizar ficha del libro" : "Agregar libro al catálogo"}</h2>
                   <p className="admin-section-copy">
-                    Usa las categorias reales que ya existen en la tienda para mantener el catalogo limpio.
+                    Usa las categorías reales que ya existen en la tienda para mantener el catálogo limpio.
                   </p>
                 </div>
               </div>
 
               <form className="admin-book-form" onSubmit={handleBookSubmit}>
                 <label className="checkout-field">
-                  <span>Titulo</span>
+                  <span>Título</span>
                   <input
                     type="text"
                     value={bookForm.titulo}
@@ -1139,7 +1139,7 @@ function Admin({ onBack }) {
                   />
                 </label>
                 <label className="checkout-field">
-                  <span>Categoria</span>
+                  <span>Categoría</span>
                   <select
                     value={bookForm.category_id}
                     onChange={(event) =>
@@ -1149,7 +1149,7 @@ function Admin({ onBack }) {
                       }))
                     }
                   >
-                    <option value="">Sin categoria</option>
+                    <option value="">Sin categoría</option>
                     {storeCategories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.nombre}
@@ -1158,7 +1158,7 @@ function Admin({ onBack }) {
                   </select>
                 </label>
                 <label className="checkout-field admin-textarea-field">
-                  <span>Descripcion corta</span>
+                  <span>Descripción corta</span>
                   <textarea
                     rows="4"
                     value={bookForm.descripcion}
@@ -1242,16 +1242,16 @@ function Admin({ onBack }) {
             <div className="admin-panel-card admin-panel-span">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Catalogo</p>
-                  <h2>Gestion de libros</h2>
+                  <p className="section-label">Catálogo</p>
+                  <h2>Gestión de libros</h2>
                 </div>
               </div>
               <div className="admin-table-wrap">
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Titulo</th>
-                      <th>Categoria</th>
+                      <th>Título</th>
+                      <th>Categoría</th>
                       <th>Precio</th>
                       <th>Stock</th>
                       <th>Vendidos</th>
@@ -1315,13 +1315,13 @@ function Admin({ onBack }) {
             <div className="admin-panel-card">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Categorias</p>
-                  <h2>Organiza el catalogo</h2>
+                  <p className="section-label">Categorías</p>
+                  <h2>Organiza el catálogo</h2>
                 </div>
               </div>
               <form className="admin-category-form" onSubmit={handleCreateCategory}>
                 <label className="checkout-field">
-                  <span>Nombre de categoria</span>
+                  <span>Nombre de categoría</span>
                   <input
                     type="text"
                     value={categoryName}
@@ -1331,7 +1331,7 @@ function Admin({ onBack }) {
                   />
                 </label>
                 <button type="submit" className="checkout-submit">
-                  Crear categoria
+                  Crear categoría
                 </button>
               </form>
             </div>
@@ -1340,7 +1340,7 @@ function Admin({ onBack }) {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Listado</p>
-                  <h2>Categorias registradas</h2>
+                  <h2>Categorías registradas</h2>
                 </div>
               </div>
               <div className="admin-category-list">
@@ -1348,7 +1348,7 @@ function Admin({ onBack }) {
                   <article key={category.id} className="admin-category-card">
                     <div>
                       <strong>{category.nombre}</strong>
-                      <span>
+                      <span style={{ marginLeft: "8px" }}>
                         {books.filter((book) => Number(book.category_id) === Number(category.id)).length} libros
                       </span>
                     </div>
@@ -1371,13 +1371,13 @@ function Admin({ onBack }) {
             <div className="admin-panel-card">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Banners y paginas</p>
-                  <h2>Gestion de secciones visibles</h2>
+                  <p className="section-label">Banners y páginas</p>
+                  <h2>Gestión de secciones visibles</h2>
                 </div>
               </div>
 
               <label className="checkout-field">
-                <span>Seccion</span>
+                <span>Sección</span>
                 <select value={selectedSectionKey} onChange={(event) => setSelectedSectionKey(event.target.value)}>
                   {SITE_SECTION_OPTIONS.map((sectionOption) => (
                     <option key={sectionOption.key} value={sectionOption.key}>
@@ -1389,7 +1389,7 @@ function Admin({ onBack }) {
 
               <form className="admin-book-form" onSubmit={handleSaveSection}>
                 <label className="checkout-field">
-                  <span>Titulo</span>
+                  <span>Título</span>
                   <input
                     type="text"
                     value={sectionForm.title}
@@ -1397,7 +1397,7 @@ function Admin({ onBack }) {
                   />
                 </label>
                 <label className="checkout-field">
-                  <span>Subtitulo</span>
+                  <span>Subtítulo</span>
                   <input
                     type="text"
                     value={sectionForm.subtitle}
@@ -1405,7 +1405,7 @@ function Admin({ onBack }) {
                   />
                 </label>
                 <label className="checkout-field admin-textarea-field">
-                  <span>Descripcion</span>
+                  <span>Descripción</span>
                   <textarea
                     rows="4"
                     value={sectionForm.body}
@@ -1444,7 +1444,7 @@ function Admin({ onBack }) {
                     rows="5"
                     value={sectionForm.items_text}
                     onChange={(event) => setSectionForm((currentValue) => ({ ...currentValue, items_text: event.target.value }))}
-                    placeholder="Linea simple o formato Titulo: descripcion"
+                    placeholder="Línea simple o formato Título: descripción"
                   />
                 </label>
                 <label className="admin-checkbox">
@@ -1453,12 +1453,12 @@ function Admin({ onBack }) {
                     checked={sectionForm.is_active}
                     onChange={(event) => setSectionForm((currentValue) => ({ ...currentValue, is_active: event.target.checked }))}
                   />
-                  <span>Seccion activa</span>
+                  <span>Sección activa</span>
                 </label>
 
                 <div className="admin-form-actions">
                   <button type="submit" className="checkout-submit">
-                    Guardar seccion
+                    Guardar sección
                   </button>
                 </div>
               </form>
@@ -1476,7 +1476,7 @@ function Admin({ onBack }) {
                   <article key={section.key} className="admin-category-card">
                     <div>
                       <strong>{SITE_SECTION_OPTIONS.find((item) => item.key === section.key)?.label || section.key}</strong>
-                      <span>{section.title || "Sin titulo"}</span>
+                      <span>{section.title || "Sin título"}</span>
                     </div>
                     <span>{section.is_active ? "Activa" : "Oculta"}</span>
                   </article>

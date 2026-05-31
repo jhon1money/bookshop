@@ -4,7 +4,6 @@ import './index.css'
 import App from './App.jsx'
 import './styles/main.css'
 import './styles/bookcard.css'
-import './styles/animations.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

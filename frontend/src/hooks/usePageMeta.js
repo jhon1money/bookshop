@@ -17,10 +17,10 @@ function ensureMetaTag(selector, attributes = {}) {
 export default function usePageMeta({
   title,
   description,
-  image = "https://placehold.co/1200x630/f5f1e6/1a1a1a?text=Libreria+SJ",
+  image = "https://bookshop-rho-ebon.vercel.app/reference/libreria-sj-hero-scene.png",
 }) {
   useEffect(() => {
-    const resolvedTitle = title ? `${title} | BookShop` : "BookShop | Libreria de libros fisicos";
+    const resolvedTitle = title ? `${title} | Librería SJ` : "Librería SJ | Libros físicos";
     document.title = resolvedTitle;
 
     const descriptionTag = ensureMetaTag('meta[name="description"]', { name: "description" });
@@ -29,11 +29,11 @@ export default function usePageMeta({
     const ogTypeTag = ensureMetaTag('meta[property="og:type"]', { property: "og:type" });
     const ogImageTag = ensureMetaTag('meta[property="og:image"]', { property: "og:image" });
 
-    descriptionTag.setAttribute("content", description || "Compra libros fisicos con entregas y seguimiento claro.");
+    descriptionTag.setAttribute("content", description || "Compra libros físicos con entregas y seguimiento claro.");
     ogTitleTag.setAttribute("content", resolvedTitle);
     ogDescriptionTag.setAttribute(
       "content",
-      description || "Compra libros fisicos con entregas y seguimiento claro.",
+      description || "Compra libros físicos con entregas y seguimiento claro.",
     );
     ogTypeTag.setAttribute("content", "website");
     ogImageTag.setAttribute("content", image);

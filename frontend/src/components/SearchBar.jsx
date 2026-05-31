@@ -23,7 +23,8 @@ function SearchBar({
             type="text"
             value={searchTerm}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Buscar por titulo o autor"
+            placeholder="Buscar por título o autor"
+            aria-label="Buscar por título o autor"
           />
         </label>
 
@@ -33,8 +34,9 @@ function SearchBar({
               type="button"
               className={`filter-button ${isFilterOpen ? "active" : ""}`}
               onClick={() => setIsFilterOpen((currentValue) => !currentValue)}
+              aria-expanded={isFilterOpen}
             >
-              Filtro
+              Filtros
               <span className="filter-button-meta">
                 {activeCategory ? activeCategory.label : "Todos"}
               </span>
@@ -43,8 +45,8 @@ function SearchBar({
             {isFilterOpen ? (
               <div className="filter-menu">
                 <div className="filter-menu-section">
-                  <p className="filter-menu-label">Categorias</p>
-                  <div className="category-chips" role="tablist" aria-label="Categorias">
+                  <p className="filter-menu-label">Categorías</p>
+                  <div className="category-chips" role="tablist" aria-label="Categorías">
                     {categories.map((category) => (
                       <button
                         key={category.slug}
@@ -64,7 +66,7 @@ function SearchBar({
                 <div className="filter-menu-section">
                   <div className="filter-menu-header">
                     <p className="filter-menu-label">Combos</p>
-                    <span className="soon-pill">Proximamente</span>
+                    <span className="soon-pill">Próximamente</span>
                   </div>
 
                   <div className="combo-chips">
@@ -83,11 +85,19 @@ function SearchBar({
             type="button"
             className={`offer-toggle ${showOffersOnly ? "active" : ""}`}
             onClick={onToggleOffers}
+            aria-pressed={showOffersOnly}
           >
             {showOffersOnly ? "Mostrando ofertas" : "Ver solo ofertas"}
           </button>
 
-          <button type="button" className="clear-filters-button" onClick={onClearFilters}>
+          <button
+            type="button"
+            className="clear-filters-button"
+            onClick={() => {
+              onClearFilters();
+              setIsFilterOpen(false);
+            }}
+          >
             Limpiar
             {activeFiltersCount > 0 ? <span className="clear-filters-badge">{activeFiltersCount}</span> : null}
           </button>

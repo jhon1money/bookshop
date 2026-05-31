@@ -7,18 +7,7 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
       : null;
 
   return (
-    <article
-      className="book-card card-hover"
-      onClick={() => onOpenDetails(book)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpenDetails(book);
-        }
-      }}
-    >
+    <article className="book-card">
       <div className="book-badge-row">
         {book.oferta ? <span className="book-badge">Oferta</span> : null}
         {book.destacado ? <span className="book-flag-chip">Destacado</span> : null}
@@ -30,12 +19,21 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
         </span>
       </div>
 
-      <div className="book-image-shell">
-        <img src={imageSrc} alt={book.titulo} className="book-image" />
-      </div>
+      <button
+        type="button"
+        className="book-media-button"
+        onClick={() => onOpenDetails(book)}
+        aria-label={`Ver detalle de ${book.titulo}`}
+      >
+        <span className="book-image-shell">
+          <img src={imageSrc} alt={book.titulo} className="book-image" />
+        </span>
+      </button>
 
       <div className="book-content">
-        <div className="book-title">{book.titulo}</div>
+        <button type="button" className="book-title-button" onClick={() => onOpenDetails(book)}>
+          {book.titulo}
+        </button>
         <div className="book-author">{book.autor}</div>
 
         <div className="book-prices">
@@ -43,17 +41,19 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
           {offerPrice ? <span className="price-offer">RD$ {offerPrice}</span> : null}
         </div>
 
-        <button
-          type="button"
-          className="book-button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onAddToCart(book);
-          }}
-          disabled={book.stock <= 0}
-        >
-          {book.stock > 0 ? "Agregar al carrito" : "No disponible"}
-        </button>
+        <div className="book-card-actions">
+          <button
+            type="button"
+            className="book-button"
+            onClick={() => onAddToCart(book)}
+            disabled={book.stock <= 0}
+          >
+            {book.stock > 0 ? "Agregar" : "Sin stock"}
+          </button>
+          <button type="button" className="book-detail-button" onClick={() => onOpenDetails(book)}>
+            Detalle
+          </button>
+        </div>
       </div>
     </article>
   );

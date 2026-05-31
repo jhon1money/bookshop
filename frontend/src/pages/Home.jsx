@@ -8,46 +8,51 @@ import usePageMeta from "../hooks/usePageMeta";
 
 const FALLBACK_CATEGORIES = [
   "Todos",
-  "Programacion",
-  "Tecnologia",
+  "Programación",
+  "Tecnología",
   "Desarrollo personal",
   "Negocios",
   "Marketing",
   "Finanzas",
-  "Psicologia",
+  "Psicología",
   "Romance",
-  "Fantasia",
-  "Ciencia ficcion",
+  "Fantasía",
+  "Ciencia ficción",
   "Misterio",
   "Thriller",
   "Historia",
-  "Biografias",
-  "Filosofia",
+  "Biografías",
+  "Filosofía",
   "Ciencia",
   "Salud",
-  "Educacion",
+  "Educación",
   "Infantil",
 ];
 
 const UPCOMING_COMBOS = [
-  { label: "Combo programacion", slug: "combo-programacion" },
+  { label: "Combo programación", slug: "combo-programacion" },
   { label: "Pack romance", slug: "pack-romance" },
-  { label: "Saga fantasia", slug: "saga-fantasia" },
+  { label: "Saga fantasía", slug: "saga-fantasia" },
   { label: "Lecturas 2x1", slug: "lecturas-2x1" },
 ];
 
-function toSlug(value) {
+function normalizeText(value) {
   return value
+    .toString()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function toSlug(value) {
+  return normalizeText(value)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
 
 function inferCategorySlugs(book, backendCategoryMap) {
   const categorySlugs = new Set();
-  const haystack = `${book.titulo || ""} ${book.autor || ""} ${book.descripcion || ""}`.toLowerCase();
+  const haystack = normalizeText(`${book.titulo || ""} ${book.autor || ""} ${book.descripcion || ""}`);
 
   if (book.category_id && backendCategoryMap.has(book.category_id)) {
     categorySlugs.add(backendCategoryMap.get(book.category_id));
@@ -223,7 +228,7 @@ function Home({
 
   usePageMeta({
     title: "Inicio",
-    description: "Compra libros fisicos, descubre novedades editoriales y confirma tus pedidos por WhatsApp y correo.",
+    description: "Compra libros físicos, descubre novedades editoriales y confirma tus pedidos por WhatsApp y correo.",
   });
 
   useEffect(() => {
@@ -279,7 +284,7 @@ function Home({
   }, []);
 
   useEffect(() => {
-    const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
+    const normalizedSearch = normalizeText(deferredSearchTerm.trim());
     const backendCategoryMap = new Map(
       categories.filter((category) => category.id).map((category) => [category.id, category.slug]),
     );
@@ -287,8 +292,8 @@ function Home({
     const filteredBooks = books.filter((book) => {
       const matchesSearch =
         !normalizedSearch ||
-        book.titulo.toLowerCase().includes(normalizedSearch) ||
-        book.autor.toLowerCase().includes(normalizedSearch);
+        normalizeText(book.titulo || "").includes(normalizedSearch) ||
+        normalizeText(book.autor || "").includes(normalizedSearch);
       const matchesOffer = !showOffersOnly || book.oferta;
       const bookCategories = inferCategorySlugs(book, backendCategoryMap);
       const matchesCategory =
@@ -345,6 +350,7 @@ function Home({
         onOpenCart={onOpenCart}
         onNavigate={onNavigate}
         onBrandReset={onBrandReset}
+        activeView="home"
       />
 
       <section className="container sj-hero-shell">
@@ -360,7 +366,7 @@ function Home({
 
               <div className="sj-hero-overline">
                 <span />
-                <p>Libreria</p>
+                <p>Librería</p>
                 <span />
               </div>
 
@@ -378,15 +384,19 @@ function Home({
               </div>
 
               <h1 className="sj-hero-title">
-                <span>Mas que libros,</span>
-                <em>historias que te transforman.</em>
+                <span>Más que libros,</span>
+                <em>
+                  historias que te
+                  <br />
+                  transforman.
+                </em>
               </h1>
 
               <p className="sj-hero-support">
                 <span className="sj-hero-support-icon" aria-hidden="true">
                   <BookStamp className="book-stamp-image support-book-image" />
                 </span>
-                Conecta. Aprende. Inspirate.
+                Conecta. Aprende. Inspírate.
               </p>
 
               <div className="sj-hero-actions">
@@ -394,7 +404,7 @@ function Home({
                   <span className="sj-hero-button-icon" aria-hidden="true">
                     <BookStamp className="book-stamp-image button-book-image" />
                   </span>
-                  Ver catalogo
+                  Ver catálogo
                 </button>
 
                 <button
@@ -421,24 +431,24 @@ function Home({
           <div className="sj-hero-scene">
             <img
               src="/reference/libreria-sj-hero-scene.png"
-              alt="Pila de libros fisicos frente a una biblioteca"
+              alt="Pila de libros físicos frente a una biblioteca"
               className="sj-hero-scene-image"
             />
           </div>
         </div>
 
         <div className="sj-benefits-row">
-          <BenefitCard icon="truck" title="Envios a todo" copy="el pais" />
+          <BenefitCard icon="truck" title="Envíos a todo" copy="el país" />
           <BenefitCard icon="shield" title="Compra 100%" copy="segura" />
           <BenefitCard icon="featureBook" title="Novedades" copy="cada semana" />
-          <BenefitCard icon="headset" title="Atencion" copy="personalizada" />
+          <BenefitCard icon="headset" title="Atención" copy="personalizada" />
         </div>
       </section>
 
       <section className="container catalog-panel" id="catalogo">
         <div className="section-heading">
           <div>
-            <p className="section-label">Catalogo</p>
+            <p className="section-label">Catálogo</p>
             <h2>Libros disponibles</h2>
           </div>
           <span className="book-count">{visibleBooks.length} resultados</span>
@@ -461,7 +471,7 @@ function Home({
         {loading ? <LoadingBooksGrid /> : null}
         {error ? <p className="status-box error-box">{error}</p> : null}
         {!loading && !error && visibleBooks.length === 0 ? (
-          <p className="status-box">No encontramos libros con esos filtros. Prueba otra busqueda.</p>
+          <p className="status-box">No encontramos libros con esos filtros. Prueba otra búsqueda.</p>
         ) : null}
 
         {!loading && !error && visibleBooks.length > 0 ? (
@@ -491,7 +501,7 @@ function Home({
                 onClick={() => setSelectedBook(book)}
               >
                 <span className="editorial-item-title">{book.titulo}</span>
-                <span className="editorial-item-copy">Lectura destacada para compra fisica</span>
+                <span className="editorial-item-copy">Lectura destacada para compra física</span>
               </button>
             ))}
           </div>
@@ -499,7 +509,7 @@ function Home({
 
         <article className="editorial-card">
           <p className="section-label">Novedades</p>
-          <h2>Recien llegados a la libreria</h2>
+          <h2>Recién llegados a la librería</h2>
           <div className="editorial-list">
             {newBooks.map((book) => (
               <button
@@ -509,17 +519,17 @@ function Home({
                 onClick={() => setSelectedBook(book)}
               >
                 <span className="editorial-item-title">{book.titulo}</span>
-                <span className="editorial-item-copy">Nueva edicion fisica disponible</span>
+                <span className="editorial-item-copy">Nueva edición física disponible</span>
               </button>
             ))}
           </div>
         </article>
       </section>
 
-      <section className="container editorial-strip">
+      <section className="container editorial-strip" id="ofertas">
         <article className="editorial-card">
-          <p className="section-label" id="ofertas">Ofertas</p>
-          <h2>Titulos con precio especial</h2>
+          <p className="section-label">Ofertas</p>
+          <h2>Títulos con precio especial</h2>
           <div className="editorial-list">
             {offerBooks.map((book) => (
               <button
@@ -530,7 +540,7 @@ function Home({
               >
                 <span className="editorial-item-title">{book.titulo}</span>
                 <span className="editorial-item-copy">
-                  {book.oferta && book.precio_oferta ? "Oferta activa para compra fisica" : "Consulta precio especial"}
+                  {book.oferta && book.precio_oferta ? "Oferta activa para compra física" : "Consulta precio especial"}
                 </span>
               </button>
             ))}
@@ -559,17 +569,17 @@ function Home({
       <section className="container contact-panel">
         <div className="contact-copy">
           <p className="section-label">{contactSection.subtitle || "Contacto"}</p>
-          <h2>{contactSection.title || "Te ayudamos a encontrar tu siguiente libro fisico"}</h2>
+          <h2>{contactSection.title || "Te ayudamos a encontrar tu siguiente libro físico"}</h2>
           <p>
             {contactSection.body ||
-              "Atendemos pedidos por WhatsApp, coordinamos entregas y confirmamos cada compra con un numero de orden por correo."}
+              "Atendemos pedidos por WhatsApp, coordinamos entregas y confirmamos cada compra con un número de orden por correo."}
           </p>
           <div className="info-actions">
             <button type="button" className="primary-button" onClick={() => onNavigate("contacto")}>
               Ir a contacto
             </button>
             <button type="button" className="secondary-button" onClick={() => onNavigate("envios")}>
-              Ver envios
+              Ver envíos
             </button>
           </div>
         </div>
@@ -621,11 +631,13 @@ function Home({
                 </div>
 
                 <p className="modal-description">
-                  {selectedBook.descripcion || "Este libro aun no tiene descripcion registrada."}
+                  {selectedBook.descripcion || "Este libro aún no tiene descripción registrada."}
                 </p>
 
                 <div className="book-prices modal-price">
-                  <span className="book-price">RD$ {Number(selectedBook.precio).toFixed(2)}</span>
+                  <span className={selectedBook.oferta && selectedBook.precio_oferta ? "price-original" : "book-price"}>
+                    RD$ {Number(selectedBook.precio).toFixed(2)}
+                  </span>
                   {selectedBook.oferta && selectedBook.precio_oferta ? (
                     <span className="price-offer">RD$ {Number(selectedBook.precio_oferta).toFixed(2)}</span>
                   ) : null}

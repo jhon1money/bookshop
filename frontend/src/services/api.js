@@ -1,5 +1,4 @@
-// const API_URL = "http://127.0.0.1:5000";
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:5000").replace(/\/$/, "");
 
 function createAuthHeaders(token) {
   return {
@@ -31,7 +30,7 @@ export async function getCategories() {
   const response = await fetch(`${API_URL}/api/categories`);
 
   if (!response.ok) {
-    throw new Error("No se pudieron cargar las categorias");
+    throw new Error("No se pudieron cargar las categorías");
   }
 
   return response.json();
@@ -153,7 +152,7 @@ export async function getAdminOrders(token, filters = {}) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudieron cargar las ordenes");
+    throw new Error(data.message || "No se pudieron cargar las órdenes");
   }
 
   return data;
@@ -249,7 +248,7 @@ export async function createAdminCategory(token, payload) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo crear la categoria");
+    throw new Error(data.message || "No se pudo crear la categoría");
   }
 
   return data;
@@ -291,7 +290,7 @@ export async function deleteAdminCategory(token, categoryId) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "No se pudo eliminar la categoria");
+    throw new Error(data.message || "No se pudo eliminar la categoría");
   }
 
   return data;

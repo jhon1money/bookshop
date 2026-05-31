@@ -53,7 +53,7 @@ function Icon({ name }) {
   );
 }
 
-function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
+function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset, activeView = "home" }) {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -89,12 +89,16 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
           </span>
           <span className="brand-seal-copy">SJ</span>
         </span>
-        <span className="brand-wordmark">Libreria SJ</span>
+        <span className="brand-wordmark">Librería SJ</span>
       </button>
 
       <nav className={`topnav ${isMenuOpen ? "open" : ""}`} aria-label="Principal">
         <div className="topnav-links">
-          <button type="button" className="nav-link active" onClick={onBrandReset}>
+          <button
+            type="button"
+            className={`nav-link ${activeView === "home" ? "active" : ""}`}
+            onClick={onBrandReset}
+          >
             Inicio
           </button>
           <button type="button" className="nav-link" onClick={() => navigateToSection("catalogo")}>
@@ -104,7 +108,7 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
             </span>
           </button>
           <button type="button" className="nav-link" onClick={() => navigateToSection("categorias")}>
-            Categorias
+            Categorías
             <span className="nav-chevron">
               <Icon name="chevron" />
             </span>
@@ -115,7 +119,11 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
           <button type="button" className="nav-link" onClick={() => navigateToSection("ofertas")}>
             Ofertas
           </button>
-          <button type="button" className="nav-link" onClick={() => handleNavigate("contacto")}>
+          <button
+            type="button"
+            className={`nav-link ${activeView === "contacto" ? "active" : ""}`}
+            onClick={() => handleNavigate("contacto")}
+          >
             Contacto
           </button>
         </div>
@@ -125,7 +133,7 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
         <button
           type="button"
           className="utility-link"
-          aria-label="Buscar en el catalogo"
+          aria-label="Buscar en el catálogo"
           onClick={() => navigateToSection("catalogo")}
         >
           <Icon name="search" />
@@ -133,7 +141,7 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
         <button
           type="button"
           className="utility-link"
-          aria-label="Conocer la libreria"
+          aria-label="Conocer la librería"
           onClick={() => handleNavigate("nosotros")}
         >
           <Icon name="user" />
@@ -156,7 +164,8 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset }) {
         type="button"
         className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
         onClick={() => setIsMenuOpen((currentValue) => !currentValue)}
-        aria-label="Abrir menu"
+        aria-expanded={isMenuOpen}
+        aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
       >
         <span />
         <span />
