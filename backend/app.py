@@ -63,14 +63,14 @@ def ensure_book_schema():
     inspector = inspect(db.engine)
     existing_columns = {column["name"] for column in inspector.get_columns("book")}
     missing_sql = {
-        "active": 'ALTER TABLE book ADD COLUMN active BOOLEAN DEFAULT 1',
-        "destacado": 'ALTER TABLE book ADD COLUMN destacado BOOLEAN DEFAULT 0',
-        "novedad": 'ALTER TABLE book ADD COLUMN novedad BOOLEAN DEFAULT 0',
-        "preventa": 'ALTER TABLE book ADD COLUMN preventa BOOLEAN DEFAULT 0',
-        "recomendado": 'ALTER TABLE book ADD COLUMN recomendado BOOLEAN DEFAULT 0',
-        "promo_2x1": 'ALTER TABLE book ADD COLUMN promo_2x1 BOOLEAN DEFAULT 0',
-        "promo_2x1_partner_id": 'ALTER TABLE book ADD COLUMN promo_2x1_partner_id INTEGER',
-    }
+    "active": 'ALTER TABLE book ADD COLUMN active BOOLEAN DEFAULT TRUE',
+    "destacado": 'ALTER TABLE book ADD COLUMN destacado BOOLEAN DEFAULT FALSE',
+    "novedad": 'ALTER TABLE book ADD COLUMN novedad BOOLEAN DEFAULT FALSE',
+    "preventa": 'ALTER TABLE book ADD COLUMN preventa BOOLEAN DEFAULT FALSE',
+    "recomendado": 'ALTER TABLE book ADD COLUMN recomendado BOOLEAN DEFAULT FALSE',
+    "promo_2x1": 'ALTER TABLE book ADD COLUMN promo_2x1 BOOLEAN DEFAULT FALSE',
+    "promo_2x1_partner_id": 'ALTER TABLE book ADD COLUMN promo_2x1_partner_id INTEGER',
+}
 
     with db.engine.begin() as connection:
         for column_name, sql_statement in missing_sql.items():
