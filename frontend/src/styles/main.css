@@ -1815,6 +1815,7 @@ img {
 
 .site-footer {
   margin-top: 2.4rem;
+  border-top: 1.6rem solid var(--paper);
   padding: 1rem 0 1.1rem;
   background: #16202b;
   color: #fffaf2;
@@ -2434,17 +2435,20 @@ img {
 
   .menu-toggle {
     display: inline-flex;
-    flex: 0 0 auto;
+    flex: 0 0 2.65rem;
+    width: 2.65rem;
+    height: 2.65rem;
     margin-left: auto;
-    position: fixed;
-    top: 1.05rem;
+    position: relative;
+    top: auto;
     right: auto;
-    left: 4.4rem;
+    left: auto;
     z-index: 90;
+    border-radius: var(--radius-card);
   }
 
   .brand-cluster {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     gap: 0.5rem;
   }
 
@@ -2473,9 +2477,13 @@ img {
   }
 
   .utility-link,
-  .menu-toggle {
+  .topnav-utilities .utility-link {
     width: 2.25rem;
     height: 2.25rem;
+  }
+
+  .menu-toggle span {
+    width: 1.35rem;
   }
 
   .sj-hero-panel {
