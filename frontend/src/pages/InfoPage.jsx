@@ -9,7 +9,7 @@ const INFO_SECTION_MAP = {
   preguntas: "faq",
   politicas: "policies",
   envios: "shipping",
-  contacto: "contact",
+  contacto: "about",
 };
 
 const PAGE_META = {
@@ -30,8 +30,8 @@ const PAGE_META = {
     description: "Información de envíos, entregas y coordinación de libros físicos.",
   },
   contacto: {
-    title: "Contacto",
-    description: "Contacta a Librería SJ por WhatsApp o correo para ayuda y seguimiento.",
+    title: "Sobre nosotros",
+    description: "Conoce nuestra librería y la forma en que acompañamos cada compra.",
   },
 };
 
@@ -89,7 +89,6 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
   }, [slug]);
 
   const section = useMemo(() => sections[INFO_SECTION_MAP[slug]] || null, [sections, slug]);
-  const aboutSection = sections.about || null;
   const ctaView = section?.cta_link?.startsWith("/#")
     ? "home"
     : section?.cta_link?.replace("/", "") || "home";
@@ -131,15 +130,7 @@ function InfoPage({ slug, cartItems, onOpenCart, onNavigate, onBrandReset, activ
 
         {!loading && !error && section ? (
           <>
-            {slug === "contacto" && aboutSection ? (
-              <section className="contact-about-panel">
-                <p className="section-label">{aboutSection.subtitle || "Sobre nosotros"}</p>
-                <h2>{aboutSection.title || "Sobre Librería SJ"}</h2>
-                <p>{aboutSection.body}</p>
-                {renderSectionItems(aboutSection.items)}
-              </section>
-            ) : null}
-            {slug === "contacto" ? null : renderSectionItems(section.items)}
+            {renderSectionItems(section.items)}
             <div className="info-actions">
               {section.cta_link ? (
                 <button

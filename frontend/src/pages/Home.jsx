@@ -31,9 +31,6 @@ const FALLBACK_CATEGORIES = [
 ];
 
 const UPCOMING_COMBOS = [
-  { label: "Combo programación", slug: "combo-programacion" },
-  { label: "Pack romance", slug: "pack-romance" },
-  { label: "Saga fantasía", slug: "saga-fantasia" },
   { label: "Lecturas 2x1", slug: "lecturas-2x1" },
 ];
 
@@ -221,6 +218,7 @@ function Home({
   const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [selectedCombo, setSelectedCombo] = useState("");
   const [categories, setCategories] = useState(
     FALLBACK_CATEGORIES.map((category) => ({ label: category, slug: toSlug(category) || "todos" })),
   );
@@ -298,15 +296,16 @@ function Home({
         normalizeText(book.titulo || "").includes(normalizedSearch) ||
         normalizeText(book.autor || "").includes(normalizedSearch);
       const matchesOffer = !showOffersOnly || book.oferta;
+      const matchesCombo = selectedCombo !== "lecturas-2x1" || book.promo_2x1;
       const bookCategories = inferCategorySlugs(book, backendCategoryMap);
       const matchesCategory =
         selectedCategory === "todos" || bookCategories.includes(selectedCategory);
 
-      return matchesSearch && matchesOffer && matchesCategory;
+      return matchesSearch && matchesOffer && matchesCombo && matchesCategory;
     });
 
     setVisibleBooks(filteredBooks);
-  }, [books, categories, deferredSearchTerm, selectedCategory, showOffersOnly]);
+  }, [books, categories, deferredSearchTerm, selectedCategory, selectedCombo, showOffersOnly]);
 
   const aboutSection = siteContent.about || {};
 
@@ -331,12 +330,14 @@ function Home({
   }, [books]);
 
   const aboutItems = aboutSection.items || [];
-  const activeFiltersCount = Number(showOffersOnly) + Number(selectedCategory !== "todos");
+  const activeFiltersCount =
+    Number(showOffersOnly) + Number(selectedCategory !== "todos") + Number(Boolean(selectedCombo));
 
   function resetFilters() {
     setSearchTerm("");
     setShowOffersOnly(false);
     setSelectedCategory("todos");
+    setSelectedCombo("");
   }
 
   function scrollToSection(sectionId) {
@@ -467,6 +468,8 @@ function Home({
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           combos={UPCOMING_COMBOS}
+          selectedCombo={selectedCombo}
+          onComboChange={setSelectedCombo}
           onClearFilters={resetFilters}
           activeFiltersCount={activeFiltersCount}
         />
@@ -578,7 +581,7 @@ function Home({
               "Seleccionamos libros físicos con criterio editorial, atención cercana y seguimiento real de cada pedido."}
           </p>
           <div className="info-actions">
-            <button type="button" className="primary-button" onClick={() => onNavigate("contacto")}>
+            <button type="button" className="primary-button" onClick={() => onNavigate("nosotros")}>
               Sobre nosotros
             </button>
             <button type="button" className="secondary-button" onClick={() => onNavigate("blog")}>

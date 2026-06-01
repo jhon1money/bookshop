@@ -766,7 +766,8 @@ img {
 
 .filter-button.active,
 .offer-toggle.active,
-.category-chip.active {
+.category-chip.active,
+.combo-chip.active {
   border-color: var(--green);
   background: var(--green);
   color: #fffaf2;
@@ -825,11 +826,10 @@ img {
 }
 
 .combo-chip {
-  color: #8f887d;
-  cursor: not-allowed;
+  color: var(--ink);
+  cursor: pointer;
 }
 
-.soon-pill,
 .clear-filters-badge,
 .admin-tag {
   display: inline-flex;
@@ -838,12 +838,6 @@ img {
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 850;
-}
-
-.soon-pill {
-  padding: 0.32rem 0.55rem;
-  background: #f8ead0;
-  color: #846120;
 }
 
 .clear-filters-button {
@@ -1817,6 +1811,7 @@ img {
 .footer-brand p,
 .footer-column span,
 .footer-column a,
+.footer-column p,
 .footer-column button,
 .footer-bottom {
   color: rgba(255, 250, 242, 0.74);
@@ -1857,6 +1852,11 @@ img {
   font-size: 0.98rem;
 }
 
+.footer-column p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .footer-column a,
 .footer-column button {
   width: fit-content;
@@ -1874,7 +1874,7 @@ img {
   color: #e4c26a;
 }
 
-.footer-contact-card {
+.footer-about-card {
   background: rgba(228, 194, 106, 0.09);
 }
 
@@ -1965,8 +1965,7 @@ img {
 
 .blog-hero,
 .blog-form-panel,
-.blog-post-card,
-.contact-about-panel {
+.blog-post-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -2030,8 +2029,7 @@ img {
   font-size: 0.88rem;
 }
 
-.blog-post-card > p,
-.contact-about-panel > p {
+.blog-post-card > p {
   color: var(--ink-soft);
   line-height: 1.7;
 }
@@ -2060,16 +2058,6 @@ img {
   align-items: end;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
-}
-
-.contact-about-panel {
-  display: grid;
-  gap: 0.7rem;
-  padding: 1rem;
-}
-
-.contact-about-panel .info-items {
-  margin-top: 0.2rem;
 }
 
 .admin-shell {

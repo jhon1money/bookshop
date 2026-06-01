@@ -1,4 +1,3 @@
-const STORE_PHONE = "829-447-5730";
 const WHATSAPP_NUMBER = "18294475730";
 const STORE_EMAIL = "Cristofer25suarez@gmail.com";
 const WHATSAPP_MESSAGE = "Hola, estoy interesado en comprar libros";
@@ -20,13 +19,11 @@ function Footer({ onNavigate }) {
           <div>
             <h3 id="footer-brand-title">Librería SJ</h3>
             <p>
-              Catálogo curado de libros físicos, novedades y recomendaciones para lectores que
-              quieren comprar con seguridad y buen acompañamiento.
+              Libros físicos seleccionados con atención cercana y seguimiento claro.
             </p>
             <div className="footer-proof-list">
               <span>Orden confirmada</span>
               <span>Libros físicos</span>
-              <span>Atención cercana</span>
             </div>
           </div>
         </section>
@@ -35,6 +32,9 @@ function Footer({ onNavigate }) {
           <h3>Explorar</h3>
           <button type="button" onClick={() => goTo("home")}>
             Inicio
+          </button>
+          <button type="button" onClick={() => goTo("nosotros")}>
+            Sobre nosotros
           </button>
           <button type="button" onClick={() => goTo("blog")}>
             Blog de lectores
@@ -47,14 +47,14 @@ function Footer({ onNavigate }) {
           </button>
         </nav>
 
-        <section className="footer-column footer-contact-card">
-          <h3>Contacto</h3>
-          <a href={whatsappLink} target="_blank" rel="noreferrer">
-            WhatsApp: {STORE_PHONE}
-          </a>
-          <a href={`mailto:${STORE_EMAIL}`}>{STORE_EMAIL}</a>
-          <span>Lunes a sábado, 9:00am a 9:00pm</span>
-          <span>República Dominicana</span>
+        <section className="footer-column footer-about-card">
+          <h3>Sobre nosotros</h3>
+          <p>
+            Una librería online para comprar fácil, con catálogo curado y atención humana.
+          </p>
+          <button type="button" onClick={() => goTo("nosotros")}>
+            Conocer la tienda
+          </button>
         </section>
 
         <section className="footer-column">

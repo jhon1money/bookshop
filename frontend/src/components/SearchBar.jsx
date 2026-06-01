@@ -9,6 +9,8 @@ function SearchBar({
   selectedCategory,
   onCategoryChange,
   combos,
+  selectedCombo,
+  onComboChange,
   onClearFilters,
   activeFiltersCount = 0,
 }) {
@@ -64,14 +66,19 @@ function SearchBar({
                 </div>
 
                 <div className="filter-menu-section">
-                  <div className="filter-menu-header">
-                    <p className="filter-menu-label">Combos</p>
-                    <span className="soon-pill">Próximamente</span>
-                  </div>
+                  <p className="filter-menu-label">Combos</p>
 
                   <div className="combo-chips">
                     {combos.map((combo) => (
-                      <button key={combo.slug} type="button" className="combo-chip" disabled>
+                      <button
+                        key={combo.slug}
+                        type="button"
+                        className={`combo-chip ${selectedCombo === combo.slug ? "active" : ""}`}
+                        onClick={() => {
+                          onComboChange(selectedCombo === combo.slug ? "" : combo.slug);
+                          setIsFilterOpen(false);
+                        }}
+                      >
                         {combo.label}
                       </button>
                     ))}

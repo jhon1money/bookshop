@@ -128,10 +128,10 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset, activeView = 
           </button>
           <button
             type="button"
-            className={`nav-link ${activeView === "contacto" ? "active" : ""}`}
-            onClick={() => handleNavigate("contacto")}
+            className={`nav-link ${activeView === "nosotros" ? "active" : ""}`}
+            onClick={() => handleNavigate("nosotros")}
           >
-            Contacto
+            Nosotros
           </button>
         </div>
       </nav>
