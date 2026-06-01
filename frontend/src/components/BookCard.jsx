@@ -52,7 +52,7 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
             onClick={() => onAddToCart(book)}
             disabled={book.stock <= 0}
           >
-            {book.stock > 0 ? "Agregar" : "Sin stock"}
+            {book.stock > 0 ? (book.promo_2x1 ? "Agregar 2x1" : "Agregar") : "Sin stock"}
           </button>
           <button type="button" className="book-detail-button" onClick={() => onOpenDetails(book)}>
             Detalle

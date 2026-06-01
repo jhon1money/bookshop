@@ -2,27 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Footer from "../components/Footer";
 import { createOrder, quoteOrder } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
-
-function calculateLocalSummary(cartItems) {
-  const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.oferta && item.precio_oferta ? Number(item.precio_oferta) : Number(item.precio);
-    return sum + price * item.quantity;
-  }, 0);
-  const totalUnits = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const discountRate = totalUnits >= 3 ? 0.2 : totalUnits === 2 ? 0.15 : 0;
-  const discountAmount = subtotal * discountRate;
-
-  return {
-    subtotal,
-    total_units: totalUnits,
-    discount_rate: discountRate,
-    discount_amount: discountAmount,
-    promo_discount_amount: 0,
-    promotions: [],
-    total: subtotal - discountAmount,
-    isEstimate: true,
-  };
-}
+import { calculateCartSummary, getPromoPairs } from "../utils/cartPromos";
 
 function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, onClearCart, onOrderPlaced }) {
   const [customerData, setCustomerData] = useState({
@@ -35,7 +15,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
-  const [checkoutSummary, setCheckoutSummary] = useState(() => calculateLocalSummary(cartItems));
+  const [checkoutSummary, setCheckoutSummary] = useState(() => calculateCartSummary(cartItems));
 
   usePageMeta({
     title: "Carrito",
@@ -44,12 +24,13 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
     robots: "noindex, follow",
   });
 
-  const localSummary = useMemo(() => calculateLocalSummary(cartItems), [cartItems]);
+  const localSummary = useMemo(() => calculateCartSummary(cartItems), [cartItems]);
+  const promoPairs = useMemo(() => getPromoPairs(cartItems), [cartItems]);
   const summary = checkoutSummary || localSummary;
 
   useEffect(() => {
     if (!cartItems.length) {
-      setCheckoutSummary(calculateLocalSummary([]));
+      setCheckoutSummary(calculateCartSummary([]));
       return undefined;
     }
 
@@ -139,6 +120,22 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
         ) : (
           <div className="cart-layout">
             <section className="cart-list">
+              {promoPairs.length ? (
+                <div className="cart-promo-pairs">
+                  {promoPairs.map((pair) => (
+                    <div key={pair.key} className="cart-promo-pair">
+                      <span>Combo 2x1</span>
+                      <strong>
+                        {pair.first.titulo} + {pair.partner.titulo}
+                      </strong>
+                      <small>
+                        {pair.pairs} par{pair.pairs > 1 ? "es" : ""} enlazado{pair.pairs > 1 ? "s" : ""}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               {cartItems.map((item) => (
                 <article className="cart-line" key={item.id}>
                   <img
@@ -152,6 +149,11 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                     <span>
                       RD$ {item.oferta && item.precio_oferta ? item.precio_oferta : item.precio} por unidad
                     </span>
+                    {item.promo_2x1 ? (
+                      <span className="cart-promo-note">
+                        2x1 con {item.promo_2x1_partner_title || "libro enlazado"}
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="cart-line-controls">

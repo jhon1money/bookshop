@@ -1,3 +1,5 @@
+import { calculateCartSummary, getCartItemPrice, getPromoPairs } from "../utils/cartPromos";
+
 function CartDrawer({
   cartItems,
   isOpen,
@@ -7,10 +9,8 @@ function CartDrawer({
   onRemoveItem,
 }) {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cartItems.reduce((sum, item) => {
-    const price = item.oferta && item.precio_oferta ? Number(item.precio_oferta) : Number(item.precio);
-    return sum + price * item.quantity;
-  }, 0);
+  const summary = calculateCartSummary(cartItems);
+  const promoPairs = getPromoPairs(cartItems);
 
   return (
     <div className={`cart-layer ${isOpen ? "open" : ""}`} aria-hidden={!isOpen}>
@@ -31,8 +31,18 @@ function CartDrawer({
           <p className="cart-empty">Todavía no agregaste libros al carrito.</p>
         ) : (
           <div className="cart-items">
+            {promoPairs.length ? (
+              <div className="cart-drawer-promo-pairs">
+                {promoPairs.map((pair) => (
+                  <span key={pair.key}>
+                    2x1: {pair.first.titulo} + {pair.partner.titulo}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
             {cartItems.map((item) => {
-              const price = item.oferta && item.precio_oferta ? Number(item.precio_oferta) : Number(item.precio);
+              const price = getCartItemPrice(item);
               return (
               <article className="cart-item" key={item.id}>
                 <img
@@ -44,6 +54,11 @@ function CartDrawer({
                   <h4>{item.titulo}</h4>
                   <p>{item.autor}</p>
                   <span>RD$ {price.toFixed(2)} c/u</span>
+                  {item.promo_2x1 ? (
+                    <span className="cart-promo-note">
+                      2x1 con {item.promo_2x1_partner_title || "libro enlazado"}
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="cart-item-actions">
@@ -67,9 +82,23 @@ function CartDrawer({
         )}
 
         <div className="cart-summary">
+          {Number(summary.promo_discount_amount || 0) > 0 ? (
+            <div className="summary-row discount-row">
+              <span>Promo 2x1</span>
+              <strong>-RD$ {Number(summary.promo_discount_amount).toFixed(2)}</strong>
+            </div>
+          ) : null}
+
+          {Number(summary.discount_amount || 0) > 0 ? (
+            <div className="summary-row discount-row">
+              <span>Descuento</span>
+              <strong>-RD$ {Number(summary.discount_amount).toFixed(2)}</strong>
+            </div>
+          ) : null}
+
           <div className="summary-row">
             <span>Total</span>
-            <strong>RD$ {total.toFixed(2)}</strong>
+            <strong>RD$ {Number(summary.total || 0).toFixed(2)}</strong>
           </div>
 
           <button

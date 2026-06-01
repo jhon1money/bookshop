@@ -436,6 +436,7 @@ def create_order_number(order_id):
 def calculate_promo_2x1_discount(order_lines):
     line_by_book_id = {line["book"].id: line for line in order_lines}
     processed_pairs = set()
+    promo_book_ids = set()
     promotions = []
     discount = 0
 
@@ -458,6 +459,7 @@ def calculate_promo_2x1_discount(order_lines):
         if pairs_count <= 0:
             continue
 
+        promo_book_ids.update(pair_key)
         free_unit_price = min(float(line["price"]), float(partner_line["price"]))
         pair_discount = round(free_unit_price * pairs_count, 2)
         discount += pair_discount
@@ -469,28 +471,36 @@ def calculate_promo_2x1_discount(order_lines):
             }
         )
 
-    return round(discount, 2), promotions
+    return round(discount, 2), promotions, promo_book_ids
 
 
 def calculate_checkout_summary(order_lines):
     subtotal = round(sum(float(line["line_total"]) for line in order_lines), 2)
     total_units = sum(int(line["quantity"]) for line in order_lines)
-    promo_discount_amount, promotions = calculate_promo_2x1_discount(order_lines)
-    discounted_base = max(subtotal - promo_discount_amount, 0)
+    promo_discount_amount, promotions, promo_book_ids = calculate_promo_2x1_discount(order_lines)
+    eligible_discount_lines = [
+        line for line in order_lines if line["book"].id not in promo_book_ids
+    ]
+    eligible_discount_units = sum(int(line["quantity"]) for line in eligible_discount_lines)
+    eligible_discount_base = round(
+        sum(float(line["line_total"]) for line in eligible_discount_lines),
+        2,
+    )
 
-    if total_units >= 3:
+    if eligible_discount_units >= 3:
         discount_rate = 0.20
-    elif total_units == 2:
+    elif eligible_discount_units == 2:
         discount_rate = 0.15
     else:
         discount_rate = 0
 
-    discount_amount = round(discounted_base * discount_rate, 2)
-    total = round(max(discounted_base - discount_amount, 0), 2)
+    discount_amount = round(eligible_discount_base * discount_rate, 2)
+    total = round(max(subtotal - promo_discount_amount - discount_amount, 0), 2)
 
     return {
         "subtotal": subtotal,
         "total_units": total_units,
+        "discount_eligible_units": eligible_discount_units,
         "discount_rate": discount_rate,
         "discount_amount": discount_amount,
         "promo_discount_amount": promo_discount_amount,

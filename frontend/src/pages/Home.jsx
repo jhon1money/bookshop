@@ -332,6 +332,10 @@ function Home({
   const aboutItems = aboutSection.items || [];
   const activeFiltersCount =
     Number(showOffersOnly) + Number(selectedCategory !== "todos") + Number(Boolean(selectedCombo));
+  const booksById = useMemo(
+    () => new Map(books.map((book) => [Number(book.id), book])),
+    [books],
+  );
 
   function resetFilters() {
     setSearchTerm("");
@@ -345,6 +349,21 @@ function Home({
       behavior: "smooth",
       block: "start",
     });
+  }
+
+  function handleAddToCart(book) {
+    if (!book.promo_2x1 || !book.promo_2x1_partner_id) {
+      onAddToCart(book);
+      return;
+    }
+
+    const partnerBook = booksById.get(Number(book.promo_2x1_partner_id));
+    if (!partnerBook || partnerBook.stock <= 0) {
+      onAddToCart(book);
+      return;
+    }
+
+    onAddToCart([book, partnerBook]);
   }
 
   return (
@@ -486,7 +505,7 @@ function Home({
               <BookCard
                 key={book.id}
                 book={book}
-                onAddToCart={onAddToCart}
+                onAddToCart={handleAddToCart}
                 onOpenDetails={setSelectedBook}
               />
             ))}
@@ -658,10 +677,12 @@ function Home({
                 <button
                   type="button"
                   className="book-button modal-button"
-                  onClick={() => onAddToCart(selectedBook)}
+                  onClick={() => handleAddToCart(selectedBook)}
                   disabled={selectedBook.stock <= 0}
                 >
-                  {selectedBook.stock > 0 ? "Agregar al carrito" : "No disponible"}
+                  {selectedBook.stock > 0
+                    ? selectedBook.promo_2x1 ? "Agregar combo 2x1" : "Agregar al carrito"
+                    : "No disponible"}
                 </button>
               </div>
             </div>

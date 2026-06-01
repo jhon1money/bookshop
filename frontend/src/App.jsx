@@ -68,28 +68,32 @@ function App() {
     window.scrollTo({ top: 0, behavior: "auto" });
   }
 
-  function addToCart(book) {
+  function addToCart(selectedBooks) {
+    const booksToAdd = (Array.isArray(selectedBooks) ? selectedBooks : [selectedBooks]).filter(Boolean);
+
     setCartItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === book.id);
+      return booksToAdd.reduce((items, book) => {
+        const existingItem = items.find((item) => item.id === book.id);
 
-      if (existingItem) {
-        return currentItems.map((item) =>
-          item.id === book.id
-            ? {
-                ...item,
-                quantity: Math.min(item.quantity + 1, book.stock || item.quantity + 1),
-              }
-            : item,
-        );
-      }
+        if (existingItem) {
+          return items.map((item) =>
+            item.id === book.id
+              ? {
+                  ...item,
+                  quantity: Math.min(item.quantity + 1, book.stock || item.quantity + 1),
+                }
+              : item,
+          );
+        }
 
-      return [
-        ...currentItems,
-        {
-          ...book,
-          quantity: 1,
-        },
-      ];
+        return [
+          ...items,
+          {
+            ...book,
+            quantity: 1,
+          },
+        ];
+      }, currentItems);
     });
 
     setIsCartOpen(true);
@@ -101,20 +105,41 @@ function App() {
       return;
     }
 
-    setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === bookId
+    setCartItems((currentItems) => {
+      const selectedItem = currentItems.find((item) => item.id === bookId);
+      const partnerItem = selectedItem?.promo_2x1_partner_id
+        ? currentItems.find((item) => Number(item.id) === Number(selectedItem.promo_2x1_partner_id))
+        : null;
+      const safeQuantity = Math.min(
+        quantity,
+        selectedItem?.stock || quantity,
+        partnerItem?.stock || quantity,
+      );
+
+      return currentItems.map((item) =>
+        item.id === bookId || (partnerItem && item.id === partnerItem.id)
           ? {
               ...item,
-              quantity: Math.min(quantity, item.stock || quantity),
+              quantity: safeQuantity,
             }
           : item,
-      ),
-    );
+      );
+    });
   }
 
   function removeFromCart(bookId) {
-    setCartItems((currentItems) => currentItems.filter((item) => item.id !== bookId));
+    setCartItems((currentItems) => {
+      const selectedItem = currentItems.find((item) => item.id === bookId);
+      const partnerId = selectedItem?.promo_2x1_partner_id;
+
+      if (!partnerId) {
+        return currentItems.filter((item) => item.id !== bookId);
+      }
+
+      return currentItems.filter(
+        (item) => item.id !== bookId && Number(item.id) !== Number(partnerId),
+      );
+    });
   }
 
   function clearCart() {
