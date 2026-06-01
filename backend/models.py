@@ -45,7 +45,7 @@ class Book(db.Model):
 
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=True)
 
-    order_items = db.relationship("OrderItem", backref="book_info", lazy=True)
+    order_items = db.relationship("OrderItem", back_populates="book", lazy=True)
 
 
 class Order(db.Model):
@@ -66,7 +66,7 @@ class Order(db.Model):
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    items = db.relationship("OrderItem", backref="order", lazy=True)
+    items = db.relationship("OrderItem", back_populates="order", lazy=True)
 
 
 class OrderItem(db.Model):
@@ -81,8 +81,8 @@ class OrderItem(db.Model):
 
     price = db.Column(db.Float, nullable=False)
 
-    # RELACIÓN CON BOOK
-    book = db.relationship("Book")
+    book = db.relationship("Book", back_populates="order_items")
+    order = db.relationship("Order", back_populates="items")
 
 
 class SiteSection(db.Model):

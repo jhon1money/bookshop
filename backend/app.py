@@ -216,6 +216,11 @@ with app.app_context():
     seed_site_sections()
 
 
+@app.route("/", methods=["GET"])
+def healthcheck():
+    return json_response(200, False, "API activa.", {"service": "bookshop-api"})
+
+
 def generate_token(admin):
     payload = {
         "id": admin.id,
