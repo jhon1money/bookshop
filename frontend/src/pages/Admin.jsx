@@ -78,6 +78,46 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
+function getAdminToken() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  return sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
+}
+
+function getAdminUser() {
+  localStorage.removeItem(ADMIN_USER_KEY);
+  const storedUser = sessionStorage.getItem(ADMIN_USER_KEY);
+  if (!storedUser) {
+    return null;
+  }
+  try {
+    return JSON.parse(storedUser);
+  } catch {
+    sessionStorage.removeItem(ADMIN_USER_KEY);
+    return null;
+  }
+}
+
+function storeAdminSession(token, user) {
+  sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+  sessionStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user));
+}
+
+function clearAdminSession() {
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  sessionStorage.removeItem(ADMIN_USER_KEY);
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  localStorage.removeItem(ADMIN_USER_KEY);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function normalizeBookForm(book) {
   if (!book) {
     return EMPTY_BOOK_FORM;
@@ -103,11 +143,8 @@ function normalizeBookForm(book) {
 }
 
 function Admin({ onBack }) {
-  const [token, setToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY) || "");
-  const [adminUser, setAdminUser] = useState(() => {
-    const storedUser = localStorage.getItem(ADMIN_USER_KEY);
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [token, setToken] = useState(getAdminToken);
+  const [adminUser, setAdminUser] = useState(getAdminUser);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dashboard, setDashboard] = useState(null);
   const [books, setBooks] = useState([]);
@@ -312,9 +349,8 @@ function Admin({ onBack }) {
     return () => window.clearInterval(intervalId);
   }, [dashboardFilters, loadAdminData, orderFilters, token]);
 
-  function handleLogout() {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
-    localStorage.removeItem(ADMIN_USER_KEY);
+function handleLogout() {
+    clearAdminSession();
     setToken("");
     setAdminUser(null);
     setDashboard(null);
@@ -334,8 +370,7 @@ function Admin({ onBack }) {
 
     try {
       const response = await loginAdmin(loginForm);
-      localStorage.setItem(ADMIN_TOKEN_KEY, response.data.token);
-      localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(response.data.user));
+      storeAdminSession(response.data.token, response.data.user);
       setToken(response.data.token);
       setAdminUser(response.data.user);
       setSuccess("Sesión iniciada.");
@@ -396,10 +431,10 @@ function Admin({ onBack }) {
       .map(
         (order) => `
           <tr>
-            <td>${order.order_number}</td>
-            <td>${order.customer_name}</td>
-            <td>${formatDate(order.date)}</td>
-            <td>${ORDER_STATUS_OPTIONS.find((item) => item.value === order.status)?.label || order.status}</td>
+            <td>${escapeHtml(order.order_number)}</td>
+            <td>${escapeHtml(order.customer_name)}</td>
+            <td>${escapeHtml(formatDate(order.date))}</td>
+            <td>${escapeHtml(ORDER_STATUS_OPTIONS.find((item) => item.value === order.status)?.label || order.status)}</td>
             <td>RD$ ${Number(order.total || 0).toFixed(2)}</td>
           </tr>`,
       )
@@ -796,7 +831,7 @@ function Admin({ onBack }) {
               <div className="admin-list">
                 {topBooks.map((book) => (
                   <div key={book.id} className="admin-list-item">
-                    <div>
+                    <div className="admin-inline-copy">
                       <strong>{book.titulo}</strong>
                       <span>{book.autor}</span>
                     </div>
@@ -819,7 +854,7 @@ function Admin({ onBack }) {
                 ) : (
                   lowStockAlerts.map((book) => (
                     <div key={book.id} className="admin-list-item">
-                      <div>
+                      <div className="admin-inline-copy">
                         <strong>{book.titulo}</strong>
                         <span>{book.category_name}</span>
                       </div>
@@ -956,9 +991,9 @@ function Admin({ onBack }) {
                 {orders.map((order) => (
                   <article key={order.id} className="admin-order-card">
                     <div className="admin-order-head">
-                      <div>
+                      <div className="admin-order-customer-copy">
                         <strong>{order.order_number}</strong>
-                        <span style={{ marginLeft: "8px" }}>
+                        <span>
                           {order.customer_name} | {order.customer_email}
                         </span>
                         <span>{order.customer_phone || "Sin teléfono"}</span>
@@ -1047,9 +1082,9 @@ function Admin({ onBack }) {
               <div className="admin-list">
                 {inventoryHighlights.lowStock.map((book) => (
                   <div key={book.id} className="admin-list-item">
-                    <div>
-                      <strong >{book.titulo}</strong>
-                      <span style={{ marginLeft: "8px" }}>{book.category_name}</span>
+                    <div className="admin-inline-copy">
+                      <strong>{book.titulo}</strong>
+                      <span>{book.category_name}</span>
                     </div>
                     <small>{book.stock} unidades</small>
                   </div>
@@ -1300,7 +1335,7 @@ function Admin({ onBack }) {
               </form>
             </div>
 
-            <div className="admin-panel-card admin-panel-span">
+            <div className="admin-panel-card admin-books-list-card">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Catálogo</p>
@@ -1374,7 +1409,7 @@ function Admin({ onBack }) {
 
         {activeTab === "categories" ? (
           <section className="admin-grid">
-            <div className="admin-panel-card">
+            <div className="admin-panel-card admin-category-form-card">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Categorías</p>
@@ -1392,13 +1427,13 @@ function Admin({ onBack }) {
                     required
                   />
                 </label>
-                <button type="submit" className="checkout-submit">
+                <button type="submit" className="checkout-submit admin-category-submit">
                   Crear categoría
                 </button>
               </form>
             </div>
 
-            <div className="admin-panel-card admin-panel-span">
+            <div className="admin-panel-card admin-categories-list-card">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Listado</p>
@@ -1408,9 +1443,9 @@ function Admin({ onBack }) {
               <div className="admin-category-list">
                 {categories.map((category) => (
                   <article key={category.id} className="admin-category-card">
-                    <div>
+                    <div className="admin-inline-copy">
                       <strong>{category.nombre}</strong>
-                      <span style={{ marginLeft: "8px" }}>
+                      <span>
                         {books.filter((book) => Number(book.category_id) === Number(category.id)).length} libros
                       </span>
                     </div>
@@ -1536,7 +1571,7 @@ function Admin({ onBack }) {
               <div className="admin-category-list">
                 {siteSections.map((section) => (
                   <article key={section.key} className="admin-category-card">
-                    <div>
+                    <div className="admin-section-summary-copy">
                       <strong>{SITE_SECTION_OPTIONS.find((item) => item.key === section.key)?.label || section.key}</strong>
                       <span>{section.title || "Sin título"}</span>
                     </div>

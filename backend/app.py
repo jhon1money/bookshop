@@ -1,16 +1,20 @@
 import csv
 import datetime
+import html
 import json
+import re
 import smtplib
+import time
 from email.message import EmailMessage
 from functools import wraps
 from io import StringIO
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import jwt
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import inspect, text
+from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
 
 from config import Config
@@ -19,10 +23,27 @@ from models import Admin, BlogComment, BlogPost, Book, Category, Order, OrderIte
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config["JWT_SECRET"] = app.config.get("SECRET_KEY", "supersecretkey")
+app.config["JWT_SECRET"] = app.config["SECRET_KEY"]
 
 db.init_app(app)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": app.config.get("CORS_ORIGINS", []),
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "max_age": 600,
+        }
+    },
+    supports_credentials=False,
+)
+
+TEXT_CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+ORDER_NUMBER_RE = re.compile(r"^BS-\d{8}-\d{5}$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+RATE_LIMIT_BUCKETS = {}
 
 
 def json_response(code, error, message, data=None):
@@ -38,6 +59,219 @@ def json_response(code, error, message, data=None):
 
 def server_error_response(data=None):
     return json_response(500, True, "Ocurrió un error.", data)
+
+
+def get_client_ip():
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def rate_limit_key():
+    path = request.path
+    if path == "/api/login":
+        return "login", 8, 300
+    if path.startswith("/api/orders"):
+        return "orders", 20, 300
+    if path.startswith("/api/blog"):
+        return "blog", 24, 300
+    if path.startswith("/api/admin") or request.method in {"POST", "PUT", "DELETE"}:
+        return "admin_write", 120, 300
+    return "general", 240, 300
+
+
+def check_rate_limit():
+    bucket_name, limit, window_seconds = rate_limit_key()
+    now = time.monotonic()
+    key = (bucket_name, get_client_ip())
+    attempts = [
+        timestamp
+        for timestamp in RATE_LIMIT_BUCKETS.get(key, [])
+        if now - timestamp < window_seconds
+    ]
+
+    if len(attempts) >= limit:
+        RATE_LIMIT_BUCKETS[key] = attempts
+        return False
+
+    attempts.append(now)
+    RATE_LIMIT_BUCKETS[key] = attempts
+    return True
+
+
+@app.before_request
+def security_gate():
+    if request.method == "OPTIONS":
+        return None
+
+    if request.path.startswith("/api/") and not check_rate_limit():
+        return json_response(429, True, "Demasiados intentos. Espera un poco.")
+
+    if request.method in {"POST", "PUT", "PATCH"} and request.path.startswith("/api/"):
+        if not request.is_json:
+            return json_response(415, True, "Envía datos en formato JSON.")
+
+    return None
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+    response.headers.setdefault("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'")
+    if request.is_secure or not app.config.get("DEBUG", False):
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(error):
+    messages = {
+        400: "Solicitud inválida.",
+        404: "Recurso no encontrado.",
+        405: "Método no permitido.",
+        413: "El contenido enviado es muy grande.",
+        415: "Envía datos en formato JSON.",
+    }
+    return json_response(error.code or 500, True, messages.get(error.code, "Solicitud inválida."))
+
+
+def get_json_body():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        raise ValueError("Datos inválidos.")
+    return data
+
+
+def reject_html(value):
+    if HTML_TAG_RE.search(value or ""):
+        raise ValueError("No uses HTML ni scripts.")
+
+
+def normalize_text(value, field_name, max_length, required=False, min_length=0, allow_newlines=False):
+    if value is None:
+        value = ""
+    if not isinstance(value, str):
+        value = str(value)
+
+    cleaned = TEXT_CONTROL_RE.sub("", value).replace("\r\n", "\n").replace("\r", "\n")
+    if not allow_newlines:
+        cleaned = " ".join(cleaned.split())
+    else:
+        cleaned = "\n".join(" ".join(line.split()) for line in cleaned.split("\n")).strip()
+    cleaned = cleaned.strip()
+    reject_html(cleaned)
+
+    if required and not cleaned:
+        raise ValueError(f"{field_name} es requerido.")
+    if cleaned and len(cleaned) < min_length:
+        raise ValueError(f"{field_name} es muy corto.")
+    if len(cleaned) > max_length:
+        raise ValueError(f"{field_name} es muy largo.")
+
+    return cleaned
+
+
+def normalize_email(value, required=False):
+    email_value = normalize_text(value, "Correo", 150, required=required).lower()
+    if email_value and not EMAIL_RE.match(email_value):
+        raise ValueError("Correo inválido.")
+    return email_value
+
+
+def normalize_phone(value, required=False):
+    phone = normalize_text(value, "Teléfono", 50, required=required)
+    if not phone:
+        return ""
+    digits = "".join(character for character in phone if character.isdigit())
+    if len(digits) < 8 or len(digits) > 15:
+        raise ValueError("Teléfono inválido.")
+    return phone
+
+
+def parse_non_negative_int(value, field_name, max_value=10000):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{field_name} inválido.")
+    if parsed < 0 or parsed > max_value:
+        raise ValueError(f"{field_name} inválido.")
+    return parsed
+
+
+def parse_positive_int(value, field_name, max_value=20):
+    parsed = parse_non_negative_int(value, field_name, max_value=max_value)
+    if parsed <= 0:
+        raise ValueError(f"{field_name} inválido.")
+    return parsed
+
+
+def parse_money(value, field_name, required=False, max_value=1000000):
+    if value in [None, ""]:
+        if required:
+            raise ValueError(f"{field_name} es requerido.")
+        return None
+    try:
+        parsed = round(float(value), 2)
+    except (TypeError, ValueError):
+        raise ValueError(f"{field_name} inválido.")
+    if parsed < 0 or parsed > max_value:
+        raise ValueError(f"{field_name} inválido.")
+    return parsed
+
+
+def normalize_id(value, field_name, required=False):
+    if value in [None, ""]:
+        if required:
+            raise ValueError(f"{field_name} es requerido.")
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{field_name} inválido.")
+    if parsed <= 0:
+        raise ValueError(f"{field_name} inválido.")
+    return parsed
+
+
+def sanitize_url(value, field_name, max_length=400, allow_relative=True):
+    url_value = normalize_text(value, field_name, max_length)
+    if not url_value:
+        return ""
+    parsed = urlparse(url_value)
+    if parsed.scheme and parsed.scheme not in {"http", "https"}:
+        raise ValueError(f"{field_name} inválido.")
+    if not parsed.scheme and not (allow_relative and url_value.startswith("/")):
+        raise ValueError(f"{field_name} inválido.")
+    if parsed.scheme and not parsed.netloc:
+        raise ValueError(f"{field_name} inválido.")
+    return url_value
+
+
+def sanitize_cta_link(value):
+    link = normalize_text(value, "CTA link", 200)
+    if not link:
+        return ""
+    parsed = urlparse(link)
+    if parsed.scheme and parsed.scheme not in {"http", "https"}:
+        raise ValueError("CTA link inválido.")
+    if not parsed.scheme and not link.startswith(("/", "#")):
+        raise ValueError("CTA link inválido.")
+    return link
+
+
+def escape_csv_value(value):
+    text_value = str(value or "")
+    if text_value[:1] in {"=", "+", "-", "@"}:
+        return f"'{text_value}"
+    return text_value
+
+
+def escape_html(value):
+    return html.escape(str(value or ""), quote=True)
 
 
 def ensure_order_schema():
@@ -222,10 +456,15 @@ def healthcheck():
 
 
 def generate_token(admin):
+    now = datetime.datetime.utcnow()
     payload = {
         "id": admin.id,
         "username": admin.username,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=3),
+        "iat": now,
+        "nbf": now,
+        "iss": app.config.get("JWT_ISSUER"),
+        "aud": app.config.get("JWT_AUDIENCE"),
+        "exp": now + datetime.timedelta(minutes=app.config.get("JWT_EXPIRATION_MINUTES", 120)),
     }
     return jwt.encode(payload, app.config["JWT_SECRET"], algorithm="HS256")
 
@@ -245,7 +484,13 @@ def token_required(f):
         token = parts[1]
 
         try:
-            data = jwt.decode(token, app.config["JWT_SECRET"], algorithms=["HS256"])
+            data = jwt.decode(
+                token,
+                app.config["JWT_SECRET"],
+                algorithms=["HS256"],
+                issuer=app.config.get("JWT_ISSUER"),
+                audience=app.config.get("JWT_AUDIENCE"),
+            )
             current_user = db.session.get(Admin, data["id"])
             if not current_user:
                 return json_response(401, True, "Usuario no encontrado.")
@@ -278,6 +523,96 @@ def parse_bool(value, default=False):
     if isinstance(value, (int, float)):
         return bool(value)
     return str(value).strip().lower() in {"true", "1", "yes", "si", "on"}
+
+
+def sanitize_order_number(value):
+    order_number = normalize_text(value, "Número de orden", 50, required=True).upper()
+    if not ORDER_NUMBER_RE.match(order_number):
+        raise ValueError("Número de orden inválido.")
+    return order_number
+
+
+def sanitize_category_id(value):
+    category_id = normalize_id(value, "Categoría")
+    if category_id is None:
+        return None
+    category = db.session.get(Category, category_id)
+    if not category:
+        raise LookupError("Categoría no encontrada.")
+    return category_id
+
+
+def sanitize_book_payload(data, required=False):
+    payload = {}
+
+    text_fields = {
+        "titulo": ("Título", 200),
+        "autor": ("Autor", 200),
+        "descripcion": ("Descripción", 2500),
+    }
+    for field, (label, max_length) in text_fields.items():
+        if field in data or required:
+            payload[field] = normalize_text(
+                data.get(field),
+                label,
+                max_length,
+                required=required,
+                min_length=2 if field != "descripcion" else 8,
+                allow_newlines=field == "descripcion",
+            )
+
+    if "precio" in data or required:
+        payload["precio"] = parse_money(data.get("precio"), "Precio", required=True)
+    if "stock" in data or required:
+        payload["stock"] = parse_non_negative_int(data.get("stock"), "Stock", max_value=100000)
+    if "precio_oferta" in data:
+        payload["precio_oferta"] = parse_money(data.get("precio_oferta"), "Precio oferta")
+    if "category_id" in data:
+        payload["category_id"] = sanitize_category_id(data.get("category_id"))
+    if "imagen" in data:
+        payload["imagen"] = sanitize_url(data.get("imagen"), "Imagen", allow_relative=True)
+
+    for field in ["oferta", "destacado", "novedad", "preventa", "recomendado"]:
+        if field in data:
+            payload[field] = parse_bool(data.get(field), False)
+
+    if "promo_2x1" in data:
+        payload["promo_2x1"] = parse_bool(data.get("promo_2x1"), False)
+    if "promo_2x1_partner_id" in data:
+        payload["promo_2x1_partner_id"] = normalize_id(data.get("promo_2x1_partner_id"), "Libro 2x1")
+
+    price = payload.get("precio")
+    offer_price = payload.get("precio_oferta")
+    if price is not None and offer_price is not None and offer_price >= price:
+        raise ValueError("La oferta debe ser menor que el precio.")
+
+    return payload
+
+
+def sanitize_section_items(items):
+    if items in [None, ""]:
+        return []
+    if not isinstance(items, list):
+        raise ValueError("Items extra inválidos.")
+    if len(items) > 20:
+        raise ValueError("Máximo 20 items extra.")
+
+    sanitized_items = []
+    for item in items:
+        if isinstance(item, str):
+            sanitized_items.append(normalize_text(item, "Item extra", 180))
+            continue
+        if isinstance(item, dict):
+            sanitized_items.append(
+                {
+                    "title": normalize_text(item.get("title"), "Título de item", 120, required=True),
+                    "body": normalize_text(item.get("body"), "Texto de item", 280),
+                }
+            )
+            continue
+        raise ValueError("Items extra inválidos.")
+
+    return [item for item in sanitized_items if item]
 
 
 def safe_load_json(value, fallback):
@@ -512,20 +847,22 @@ def calculate_checkout_summary(order_lines):
 def build_order_lines(items):
     if not isinstance(items, list) or not items:
         raise ValueError("Agrega libros al pedido.")
+    if len(items) > 30:
+        raise ValueError("Demasiados libros en un pedido.")
+
+    requested_quantities = {}
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError("Libro inválido.")
+        book_id = normalize_id(item.get("book_id"), "Libro", required=True)
+        quantity = parse_positive_int(item.get("quantity", 0), "Cantidad", max_value=20)
+        requested_quantities[book_id] = requested_quantities.get(book_id, 0) + quantity
+        if requested_quantities[book_id] > 20:
+            raise ValueError("Cantidad inválida.")
 
     order_lines = []
-
-    for item in items:
-        book_id = item.get("book_id")
-        try:
-            quantity = int(item.get("quantity", 0))
-        except (TypeError, ValueError):
-            raise ValueError("Cantidad inválida.")
-
-        if not book_id or quantity <= 0:
-            raise ValueError("Cantidad inválida.")
-
-        book = db.session.get(Book, book_id)
+    for book_id, quantity in requested_quantities.items():
+        book = Book.query.filter_by(id=book_id).with_for_update().first()
         if not book:
             raise LookupError("Libro no encontrado.")
         if not bool(getattr(book, "active", True)):
@@ -638,9 +975,12 @@ def send_order_email(order, items):
         ]
     )
 
+    safe_customer_name = escape_html(order.customer_name)
+    safe_customer_address = escape_html(order.customer_address)
+    safe_order_number = escape_html(order.order_number)
     html_items = "".join(
         [
-            f"<tr><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;font-size:14px;line-height:1.5'>{item['titulo']}</td><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;text-align:center;font-size:14px'>{item['quantity']}</td><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;text-align:right;font-size:14px'>RD$ {item['line_total']:.2f}</td></tr>"
+            f"<tr><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;font-size:14px;line-height:1.5'>{escape_html(item['titulo'])}</td><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;text-align:center;font-size:14px'>{item['quantity']}</td><td style='padding:10px 0;border-bottom:1px solid #e8e1d2;text-align:right;font-size:14px'>RD$ {item['line_total']:.2f}</td></tr>"
             for item in items
         ]
     )
@@ -663,9 +1003,9 @@ def send_order_email(order, items):
               </tr>
               <tr>
                 <td style="padding:24px;">
-                  <p style="margin:0 0 12px;font-size:15px;">Hola {order.customer_name},</p>
+                  <p style="margin:0 0 12px;font-size:15px;">Hola {safe_customer_name},</p>
                   <p style="margin:0 0 16px;line-height:1.7;color:#555;font-size:14px;">
-                    Tu pedido <strong>{order.order_number}</strong> fue registrado.
+                    Tu pedido <strong>{safe_order_number}</strong> fue registrado.
                   </p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px;">
                     <thead>
@@ -696,7 +1036,7 @@ def send_order_email(order, items):
                     </tr>
                     <tr>
                       <td colspan="2" style="padding:0 16px 16px;font-size:14px;line-height:1.6;color:#555;">
-                        Dirección de entrega: {order.customer_address}
+                        Dirección de entrega: {safe_customer_address}
                       </td>
                     </tr>
                   </table>
@@ -785,10 +1125,7 @@ def filter_orders_list(orders, start_date=None, end_date=None, status_filter="",
 
 def sync_book_promo_pair(book, partner_id):
     if partner_id not in [None, ""]:
-        try:
-            partner_id = int(partner_id)
-        except (TypeError, ValueError):
-            raise ValueError("Libro 2x1 inválido.")
+        partner_id = normalize_id(partner_id, "Libro 2x1")
 
     previous_partner_id = getattr(book, "promo_2x1_partner_id", None)
 
@@ -812,6 +1149,8 @@ def sync_book_promo_pair(book, partner_id):
         raise ValueError("Libro 2x1 no existe.")
     if partner.id == book.id:
         raise ValueError("Elige otro libro 2x1.")
+    if not bool(getattr(partner, "active", True)):
+        raise ValueError("Libro 2x1 no disponible.")
 
     if partner.promo_2x1_partner_id and partner.promo_2x1_partner_id != book.id:
         previous_partner = db.session.get(Book, partner.promo_2x1_partner_id)
@@ -826,9 +1165,7 @@ def sync_book_promo_pair(book, partner_id):
 
 
 def validate_blog_order_number(order_number):
-    normalized_order_number = (order_number or "").strip().upper()
-    if not normalized_order_number:
-        raise ValueError("Ingresa tu número de orden.")
+    normalized_order_number = sanitize_order_number(order_number)
 
     order = Order.query.filter_by(order_number=normalized_order_number).first()
     if not order or normalize_order_status(order.status) == "cancelled":
@@ -860,19 +1197,18 @@ def serialize_blog_post(post):
 @app.route("/api/login", methods=["POST"])
 def login():
     try:
-        data = request.get_json() or {}
-        username = data.get("username", "").strip()
-        password = data.get("password", "").strip()
+        data = get_json_body()
+        username = normalize_email(data.get("username"), required=True)
+        password = str(data.get("password") or "")
 
         if not username or not password:
             return json_response(400, True, "Completa usuario y clave.")
+        if len(password) > 200:
+            return json_response(400, True, "Credenciales inválidas.")
 
-        admin = Admin.query.filter_by(username=username).first()
-        if not admin:
-            return json_response(404, True, "Usuario no encontrado.")
-
-        if not check_password_hash(admin.password, password):
-            return json_response(401, True, "Clave incorrecta.")
+        admin = Admin.query.filter(Admin.username.ilike(username)).first()
+        if not admin or not check_password_hash(admin.password, password):
+            return json_response(401, True, "Credenciales inválidas.")
 
         token = generate_token(admin)
         return json_response(
@@ -887,6 +1223,8 @@ def login():
                 },
             },
         )
+    except ValueError:
+        return json_response(400, True, "Credenciales inválidas.")
     except Exception as error:
         return server_error_response()
 
@@ -924,23 +1262,28 @@ def admin_site_content(current_user):
 @token_required
 def update_site_content(current_user, key):
     try:
-        data = request.get_json() or {}
+        data = get_json_body()
+        if key not in SITE_SECTION_DEFAULTS:
+            return json_response(400, True, "Sección inválida.")
         section = SiteSection.query.filter_by(key=key).first()
         if not section:
             section = SiteSection(key=key)
             db.session.add(section)
 
-        section.title = data.get("title", "")
-        section.subtitle = data.get("subtitle", "")
-        section.body = data.get("body", "")
-        section.image_url = data.get("image_url", "")
-        section.cta_text = data.get("cta_text", "")
-        section.cta_link = data.get("cta_link", "")
-        section.items_json = json.dumps(data.get("items", []), ensure_ascii=True)
+        section.title = normalize_text(data.get("title"), "Título", 200)
+        section.subtitle = normalize_text(data.get("subtitle"), "Subtítulo", 250)
+        section.body = normalize_text(data.get("body"), "Descripción", 2500, allow_newlines=True)
+        section.image_url = sanitize_url(data.get("image_url"), "Imagen o fondo", allow_relative=True)
+        section.cta_text = normalize_text(data.get("cta_text"), "CTA texto", 120)
+        section.cta_link = sanitize_cta_link(data.get("cta_link"))
+        section.items_json = json.dumps(sanitize_section_items(data.get("items", [])), ensure_ascii=True)
         section.is_active = parse_bool(data.get("is_active", True), True)
 
         db.session.commit()
         return json_response(200, False, "Sección guardada.", serialize_site_section(section))
+    except ValueError as error:
+        db.session.rollback()
+        return json_response(400, True, str(error))
     except Exception as error:
         db.session.rollback()
         return server_error_response()
@@ -958,7 +1301,7 @@ def get_blog_posts():
 @app.route("/api/blog/validate-order", methods=["POST"])
 def validate_blog_order():
     try:
-        data = request.get_json() or {}
+        data = get_json_body()
         order = validate_blog_order_number(data.get("order_number"))
         return json_response(
             200,
@@ -979,23 +1322,31 @@ def validate_blog_order():
 @app.route("/api/blog/posts", methods=["POST"])
 def create_blog_post():
     try:
-        data = request.get_json() or {}
+        data = get_json_body()
         order = validate_blog_order_number(data.get("order_number"))
-        author_name = (data.get("author_name") or order.customer_name or "Lector SJ").strip()[:150]
-        title = (data.get("title") or "").strip()[:180]
-        body = (data.get("body") or "").strip()
-
-        if len(title) < 4:
-            return json_response(400, True, "Agrega un título claro para tu publicación.")
-        if len(body) < 12:
-            return json_response(400, True, "Cuéntanos un poco más antes de publicar.")
+        author_name = normalize_text(
+            data.get("author_name") or order.customer_name or "Lector SJ",
+            "Nombre",
+            150,
+            required=True,
+            min_length=2,
+        )
+        title = normalize_text(data.get("title"), "Título", 180, required=True, min_length=4)
+        body = normalize_text(
+            data.get("body"),
+            "Comentario principal",
+            2500,
+            required=True,
+            min_length=12,
+            allow_newlines=True,
+        )
 
         post = BlogPost(
             order_id=order.id,
             order_number=order.order_number,
             author_name=author_name,
             title=title,
-            body=body[:2500],
+            body=body,
             status="published",
         )
         db.session.add(post)
@@ -1014,20 +1365,23 @@ def create_blog_post():
 def create_blog_comment(post_id):
     try:
         post = BlogPost.query.filter_by(id=post_id, status="published").first_or_404()
-        data = request.get_json() or {}
+        data = get_json_body()
         order = validate_blog_order_number(data.get("order_number"))
-        author_name = (data.get("author_name") or order.customer_name or "Lector SJ").strip()[:150]
-        body = (data.get("body") or "").strip()
-
-        if len(body) < 4:
-            return json_response(400, True, "Escribe un comentario un poco más completo.")
+        author_name = normalize_text(
+            data.get("author_name") or order.customer_name or "Lector SJ",
+            "Nombre",
+            150,
+            required=True,
+            min_length=2,
+        )
+        body = normalize_text(data.get("body"), "Comentario", 1200, required=True, min_length=4, allow_newlines=True)
 
         comment = BlogComment(
             post_id=post.id,
             order_id=order.id,
             order_number=order.order_number,
             author_name=author_name,
-            body=body[:1200],
+            body=body,
         )
         db.session.add(comment)
         db.session.commit()
@@ -1044,7 +1398,7 @@ def create_blog_comment(post_id):
 @app.route("/api/books", methods=["GET"])
 def get_books():
     try:
-        search = request.args.get("search", "").strip()
+        search = normalize_text(request.args.get("search", ""), "Búsqueda", 80)
         category = request.args.get("category", "").strip()
         ofertas = request.args.get("ofertas", "").strip().lower()
 
@@ -1057,9 +1411,7 @@ def get_books():
             )
 
         if category:
-            if not category.isdigit():
-                return json_response(400, True, "Categoría inválida.")
-            query = query.filter(Book.category_id == int(category))
+            query = query.filter(Book.category_id == normalize_id(category, "Categoría", required=True))
 
         if ofertas in ["true", "1", "yes"]:
             query = query.filter(Book.oferta.is_(True))
@@ -1071,6 +1423,8 @@ def get_books():
             "Libros cargados.",
             [serialize_book(book) for book in books],
         )
+    except ValueError as error:
+        return json_response(400, True, str(error))
     except Exception as error:
         return server_error_response()
 
@@ -1079,56 +1433,40 @@ def get_books():
 @token_required
 def add_book(current_user):
     try:
-        data = request.get_json() or {}
-        required_fields = ["titulo", "autor", "precio", "stock", "descripcion"]
-        missing_fields = [
-            field for field in required_fields if field not in data or data[field] in [None, ""]
-        ]
-
-        if missing_fields:
-            field_names = {
-                "titulo": "título",
-                "autor": "autor",
-                "precio": "precio",
-                "stock": "stock",
-                "descripcion": "descripción",
-            }
-            readable_fields = ", ".join(field_names.get(field, field) for field in missing_fields)
-            return json_response(400, True, f"Completa: {readable_fields}.")
-
-        category_id = data.get("category_id")
-        if category_id is not None:
-            category = db.session.get(Category, category_id)
-            if not category:
-                return json_response(404, True, "Categoría no encontrada.")
+        data = get_json_body()
+        payload = sanitize_book_payload(data, required=True)
 
         book = Book(
-            titulo=data["titulo"],
-            autor=data["autor"],
-            precio=float(data["precio"]),
-            descripcion=data["descripcion"],
-            stock=int(data["stock"]),
-            category_id=category_id,
-            oferta=parse_bool(data.get("oferta", False)),
-            destacado=parse_bool(data.get("destacado", False)),
-            novedad=parse_bool(data.get("novedad", False)),
-            preventa=parse_bool(data.get("preventa", False)),
-            recomendado=parse_bool(data.get("recomendado", False)),
-            precio_oferta=float(data["precio_oferta"]) if data.get("precio_oferta") not in [None, ""] else None,
-            imagen=data.get("imagen"),
+            titulo=payload["titulo"],
+            autor=payload["autor"],
+            precio=payload["precio"],
+            descripcion=payload["descripcion"],
+            stock=payload["stock"],
+            category_id=payload.get("category_id"),
+            oferta=payload.get("oferta", False),
+            destacado=payload.get("destacado", False),
+            novedad=payload.get("novedad", False),
+            preventa=payload.get("preventa", False),
+            recomendado=payload.get("recomendado", False),
+            precio_oferta=payload.get("precio_oferta"),
+            imagen=payload.get("imagen"),
         )
 
         db.session.add(book)
         db.session.flush()
-        sync_book_promo_pair(book, data.get("promo_2x1_partner_id") if parse_bool(data.get("promo_2x1", False)) else None)
+        sync_book_promo_pair(
+            book,
+            payload.get("promo_2x1_partner_id") if payload.get("promo_2x1", False) else None,
+        )
         db.session.commit()
 
         return json_response(201, False, "Libro creado.", {"id": book.id, "titulo": book.titulo})
+    except LookupError as error:
+        db.session.rollback()
+        return json_response(404, True, str(error))
     except ValueError as error:
-        message = str(error)
-        if message.startswith("could not") or message.startswith("invalid literal"):
-            message = "Revisa precio y stock."
-        return json_response(400, True, message or "Revisa precio y stock.")
+        db.session.rollback()
+        return json_response(400, True, str(error) or "Revisa precio y stock.")
     except Exception as error:
         db.session.rollback()
         return server_error_response()
@@ -1139,54 +1477,45 @@ def add_book(current_user):
 def update_book(current_user, id):
     try:
         book = Book.query.get_or_404(id)
-        data = request.get_json() or {}
+        data = get_json_body()
+        payload = sanitize_book_payload(data)
+        effective_price = payload.get("precio", book.precio)
+        effective_offer_price = payload.get("precio_oferta", book.precio_oferta)
+        if effective_offer_price is not None and effective_offer_price >= effective_price:
+            raise ValueError("La oferta debe ser menor que el precio.")
 
-        if "titulo" in data:
-            book.titulo = data["titulo"]
-        if "autor" in data:
-            book.autor = data["autor"]
-        if "precio" in data:
-            book.precio = float(data["precio"])
-        if "descripcion" in data:
-            book.descripcion = data["descripcion"]
-        if "stock" in data:
-            book.stock = int(data["stock"])
-        if "category_id" in data:
-            category_id = data["category_id"]
-            if category_id is not None:
-                category = db.session.get(Category, category_id)
-                if not category:
-                    return json_response(404, True, "Categoría no encontrada.")
-            book.category_id = category_id
-        if "oferta" in data:
-            book.oferta = parse_bool(data["oferta"])
-        if "destacado" in data:
-            book.destacado = parse_bool(data["destacado"])
-        if "novedad" in data:
-            book.novedad = parse_bool(data["novedad"])
-        if "preventa" in data:
-            book.preventa = parse_bool(data["preventa"])
-        if "recomendado" in data:
-            book.recomendado = parse_bool(data["recomendado"])
-        if "precio_oferta" in data:
-            book.precio_oferta = (
-                float(data["precio_oferta"]) if data["precio_oferta"] not in [None, ""] else None
-            )
-        if "imagen" in data:
-            book.imagen = data["imagen"]
+        for field in [
+            "titulo",
+            "autor",
+            "precio",
+            "descripcion",
+            "stock",
+            "category_id",
+            "oferta",
+            "destacado",
+            "novedad",
+            "preventa",
+            "recomendado",
+            "precio_oferta",
+            "imagen",
+        ]:
+            if field in payload:
+                setattr(book, field, payload[field])
+
         if "promo_2x1" in data or "promo_2x1_partner_id" in data:
             sync_book_promo_pair(
                 book,
-                data.get("promo_2x1_partner_id") if parse_bool(data.get("promo_2x1", False)) else None,
+                payload.get("promo_2x1_partner_id") if payload.get("promo_2x1", False) else None,
             )
 
         db.session.commit()
         return json_response(200, False, "Libro actualizado.")
+    except LookupError as error:
+        db.session.rollback()
+        return json_response(404, True, str(error))
     except ValueError as error:
-        message = str(error)
-        if message.startswith("could not") or message.startswith("invalid literal"):
-            message = "Revisa precio y stock."
-        return json_response(400, True, message or "Revisa precio y stock.")
+        db.session.rollback()
+        return json_response(400, True, str(error) or "Revisa precio y stock.")
     except Exception as error:
         db.session.rollback()
         return server_error_response()
@@ -1230,11 +1559,12 @@ def get_categories():
 @token_required
 def add_category(current_user):
     try:
-        data = request.get_json() or {}
-        nombre = data.get("nombre", "").strip()
+        data = get_json_body()
+        nombre = normalize_text(data.get("nombre"), "Nombre de categoría", 100, required=True, min_length=2)
 
-        if not nombre:
-            return json_response(400, True, "Nombre requerido.")
+        existing_category = Category.query.filter(Category.nombre.ilike(nombre)).first()
+        if existing_category:
+            return json_response(409, True, "La categoría ya existe.")
 
         category = Category(nombre=nombre)
         db.session.add(category)
@@ -1246,6 +1576,9 @@ def add_category(current_user):
             "Categoría creada.",
             {"id": category.id, "nombre": category.nombre},
         )
+    except ValueError as error:
+        db.session.rollback()
+        return json_response(400, True, str(error))
     except Exception as error:
         db.session.rollback()
         return server_error_response()
@@ -1484,7 +1817,7 @@ def admin_inventory(current_user):
 def admin_orders(current_user):
     try:
         status_filter = normalize_order_status(request.args.get("status", ""))
-        search = request.args.get("search", "").strip()
+        search = normalize_text(request.args.get("search", ""), "Búsqueda", 80)
         start_date = parse_iso_date(request.args.get("start_date"))
         end_date = parse_iso_date(request.args.get("end_date"), end_of_day=True)
 
@@ -1512,7 +1845,7 @@ def admin_orders(current_user):
 def update_order_status(current_user, id):
     try:
         order = Order.query.get_or_404(id)
-        data = request.get_json() or {}
+        data = get_json_body()
         normalized_status = normalize_order_status(data.get("status"))
 
         if not normalized_status:
@@ -1537,7 +1870,7 @@ def update_order_status(current_user, id):
 def export_orders(current_user):
     try:
         status_filter = normalize_order_status(request.args.get("status", ""))
-        search = request.args.get("search", "").strip()
+        search = normalize_text(request.args.get("search", ""), "Búsqueda", 80)
         start_date = parse_iso_date(request.args.get("start_date"))
         end_date = parse_iso_date(request.args.get("end_date"), end_of_day=True)
 
@@ -1574,18 +1907,18 @@ def export_orders(current_user):
             )
             writer.writerow(
                 [
-                    order.order_number,
+                    escape_csv_value(order.order_number),
                     order.date.strftime("%Y-%m-%d %H:%M") if order.date else "",
-                    order.status,
-                    order.customer_name,
-                    order.customer_email,
-                    order.customer_phone,
-                    order.customer_address,
+                    escape_csv_value(order.status),
+                    escape_csv_value(order.customer_name),
+                    escape_csv_value(order.customer_email),
+                    escape_csv_value(order.customer_phone),
+                    escape_csv_value(order.customer_address),
                     f"{float(order.subtotal or order.total or 0):.2f}",
                     f"{float(order.promo_discount_amount or 0):.2f}",
                     f"{float(order.discount_amount or 0):.2f}",
                     f"{float(order.total or 0):.2f}",
-                    items_summary,
+                    escape_csv_value(items_summary),
                 ]
             )
 
@@ -1602,7 +1935,7 @@ def export_orders(current_user):
 @app.route("/api/orders/quote", methods=["POST"])
 def quote_order():
     try:
-        data = request.get_json() or {}
+        data = get_json_body()
         order_lines = build_order_lines(data.get("items", []))
         summary = calculate_checkout_summary(order_lines)
         return json_response(
@@ -1634,15 +1967,19 @@ def quote_order():
 @app.route("/api/orders", methods=["POST"])
 def create_order():
     try:
-        data = request.get_json() or {}
-        customer_name = data.get("customer_name", "").strip()
-        customer_email = data.get("customer_email", "").strip()
-        customer_phone = data.get("customer_phone", "").strip()
-        customer_address = data.get("customer_address", "").strip()
+        data = get_json_body()
+        customer_name = normalize_text(data.get("customer_name"), "Nombre", 150, required=True, min_length=2)
+        customer_email = normalize_email(data.get("customer_email"), required=True)
+        customer_phone = normalize_phone(data.get("customer_phone"), required=True)
+        customer_address = normalize_text(
+            data.get("customer_address"),
+            "Dirección",
+            250,
+            required=True,
+            min_length=6,
+            allow_newlines=True,
+        )
         items = data.get("items", [])
-
-        if not customer_name or not customer_email or not customer_phone or not customer_address:
-            return json_response(400, True, "Completa tus datos.")
 
         order_lines = build_order_lines(items)
         summary = calculate_checkout_summary(order_lines)
@@ -1726,4 +2063,4 @@ def create_order():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=app.config.get("DEBUG", False))

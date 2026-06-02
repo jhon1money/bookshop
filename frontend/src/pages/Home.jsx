@@ -474,7 +474,6 @@ function Home({
             <p className="section-label">Catálogo</p>
             <h2>Libros disponibles</h2>
           </div>
-          <span className="book-count">{visibleBooks.length} resultados</span>
         </div>
 
         <div id="categorias" className="section-anchor" />

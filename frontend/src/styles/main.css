@@ -667,16 +667,6 @@ img {
   font-size: 2.35rem;
 }
 
-.book-count {
-  flex: 0 0 auto;
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--muted);
-  font-weight: 800;
-}
-
 .section-anchor {
   position: relative;
   top: -5rem;
@@ -1550,6 +1540,22 @@ img {
   grid-column: span 6;
 }
 
+.admin-books-list-card,
+.admin-categories-list-card {
+  align-self: start;
+}
+
+.admin-category-form-card {
+  align-self: start;
+}
+
+.admin-category-submit {
+  width: auto;
+  min-width: 10.5rem;
+  justify-self: start;
+  padding-inline: 1.2rem;
+}
+
 .admin-panel-span,
 .admin-filter-card,
 .admin-chart-card,
@@ -1677,6 +1683,26 @@ img {
   justify-content: space-between;
   gap: 0.85rem;
   padding: 0.85rem;
+}
+
+.admin-inline-copy,
+.admin-section-summary-copy,
+.admin-order-customer-copy {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+}
+
+.admin-inline-copy span,
+.admin-section-summary-copy span,
+.admin-order-customer-copy span {
+  overflow-wrap: anywhere;
+}
+
+.admin-order-customer-copy span:last-child {
+  flex-basis: 100%;
 }
 
 .admin-order-card {
@@ -2693,6 +2719,11 @@ img {
   .compact-field {
     width: 100%;
   }
+
+  .admin-list-item,
+  .admin-category-card {
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 420px) {
@@ -2716,6 +2747,16 @@ img {
   .admin-panel-card,
   .checkout-card {
     padding: 0.85rem;
+  }
+
+  .admin-list-item,
+  .admin-category-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-category-card .danger-button {
+    width: 100%;
   }
 
   .site-footer {

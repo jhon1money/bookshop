@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL ;
+const DEFAULT_API_URL = "https://bookshop-api-bxr1.onrender.com";
+const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
 
 function createAuthHeaders(token) {
   return {
@@ -8,6 +9,11 @@ function createAuthHeaders(token) {
 }
 
 async function readJson(response) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("La API no respondio JSON. Revisa VITE_API_URL.");
+  }
+
   return response.json();
 }
 
