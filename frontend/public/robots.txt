@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /carrito
 
-Sitemap: https://bookshop-rho-ebon.vercel.app/sitemap.xml
+Sitemap: https://libreriajs.com/sitemap.xml

@@ -20,11 +20,13 @@ class Config:
     JWT_AUDIENCE = os.getenv("JWT_AUDIENCE", "bookshop-admin")
     JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "120"))
 
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://bookshop-rho-ebon.vercel.app").rstrip("/")
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://libreriajs.com").rstrip("/")
     CORS_ORIGINS = parse_origins(os.getenv("CORS_ORIGINS")) or [
         FRONTEND_URL,
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
+        "https://libreriajs.com",
+        "https://www.libreriajs.com",
+        "https://bookshop-rho-ebon.vercel.app",
+        
     ]
 
     SESSION_COOKIE_HTTPONLY = True
