@@ -5,8 +5,8 @@ from models import db, Admin
 from werkzeug.security import generate_password_hash
 
 with app.app_context():
-    admin_username = os.getenv("ADMIN_USERNAME")
-    admin_password = os.getenv("ADMIN_PASSWORD")
+    admin_username = os.getenv("Cristofer25suarez@gmail.com")
+    admin_password = os.getenv("cristofer123")
 
     if not admin_username or not admin_password:
         raise RuntimeError("Define ADMIN_USERNAME y ADMIN_PASSWORD antes de crear el administrador.")
