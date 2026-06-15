@@ -329,6 +329,11 @@ function Home({
     return offers.length ? offers.slice(0, 4) : books.slice(0, 4);
   }, [books]);
 
+  const promo2x1Books = useMemo(
+    () => books.filter((book) => book.promo_2x1 && book.stock > 0).slice(0, 4),
+    [books],
+  );
+
   const aboutItems = aboutSection.items || [];
   const activeFiltersCount =
     Number(showOffersOnly) + Number(selectedCategory !== "todos") + Number(Boolean(selectedCombo));
@@ -349,6 +354,13 @@ function Home({
       behavior: "smooth",
       block: "start",
     });
+  }
+
+  function showPromo2x1Offers() {
+    setShowOffersOnly(false);
+    setSelectedCategory("todos");
+    setSelectedCombo("lecturas-2x1");
+    scrollToSection("catalogo");
   }
 
   function handleAddToCart(book) {
@@ -458,6 +470,14 @@ function Home({
               className="sj-hero-scene-image"
             />
           </div>
+
+          {promo2x1Books.length ? (
+            <button type="button" className="hero-promo-2x1-chip" onClick={showPromo2x1Offers}>
+              <span>2x1</span>
+              <strong>Oferta activa</strong>
+              <small>Ver combos</small>
+            </button>
+          ) : null}
         </div>
 
         <div className="sj-benefits-row">
@@ -467,6 +487,33 @@ function Home({
           <BenefitCard icon="headset" title="Atención" copy="personalizada" />
         </div>
       </section>
+
+      {promo2x1Books.length ? (
+        <section className="container promo-2x1-alert" aria-label="Ofertas 2x1 activas">
+          <div className="promo-2x1-burst" aria-hidden="true">
+            <span>2x1</span>
+          </div>
+
+          <div className="promo-2x1-copy">
+            <p className="section-label">Oferta activa</p>
+            <h2>Hay combos 2x1 disponibles ahora</h2>
+            <p>Agrega un libro marcado y el sistema suma su pareja al carrito automaticamente.</p>
+          </div>
+
+          <div className="promo-2x1-books" aria-label="Libros con promocion 2x1">
+            {promo2x1Books.slice(0, 3).map((book) => (
+              <button type="button" key={`promo-2x1-${book.id}`} onClick={() => setSelectedBook(book)}>
+                <span>{book.titulo}</span>
+                <small>+ {book.promo_2x1_partner_title || "libro enlazado"}</small>
+              </button>
+            ))}
+          </div>
+
+          <button type="button" className="primary-button promo-2x1-button" onClick={showPromo2x1Offers}>
+            Ver 2x1
+          </button>
+        </section>
+      ) : null}
 
       <section className="container catalog-panel" id="catalogo">
         <div className="section-heading">
@@ -652,7 +699,9 @@ function Home({
                   {selectedBook.novedad ? <span className="book-flag-chip">Novedad</span> : null}
                   {selectedBook.preventa ? <span className="book-flag-chip">Preventa</span> : null}
                   {selectedBook.recomendado ? <span className="book-flag-chip">Recomendado</span> : null}
-                  {selectedBook.promo_2x1 ? <span className="book-badge promo-badge">2x1</span> : null}
+                  {selectedBook.promo_2x1 ? (
+                    <span className="book-badge promo-badge promo-badge-animated">2x1</span>
+                  ) : null}
                 </div>
 
                 <p className="modal-description">

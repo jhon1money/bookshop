@@ -44,6 +44,19 @@ function getReceiptExtension(filename = "") {
   return filename.split(".").pop()?.toLowerCase() || "";
 }
 
+function CheckoutStepTitle({ number, label, title, copy }) {
+  return (
+    <div className="checkout-section-head">
+      <span className="checkout-step-number">{number}</span>
+      <div>
+        <p className="section-label">{label}</p>
+        <h2>{title}</h2>
+        {copy ? <p className="checkout-step-copy">{copy}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, onClearCart }) {
   const [customerData, setCustomerData] = useState(INITIAL_CUSTOMER_DATA);
   const [receiptFile, setReceiptFile] = useState(null);
@@ -82,6 +95,24 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
   const hasDirectBranches = directBranches.length > 0;
   const branchOptions = hasDirectBranches ? directBranches : allBmCargoBranches;
   const selectedBranchAddress = getBmCargoBranchAddress(customerData.bm_cargo_branch);
+  const cartStepReady = cartItems.length > 0;
+  const deliveryStepReady = Boolean(
+    customerData.delivery_type &&
+      customerData.customer_name.trim() &&
+      customerData.customer_cedula.trim() &&
+      customerData.customer_phone.trim() &&
+      customerData.province.trim() &&
+      customerData.municipality_sector.trim() &&
+      customerData.bm_cargo_branch.trim(),
+  );
+  const paymentStepReady = Boolean(
+    customerData.payment_method && (customerData.payment_method !== "transfer" || receiptFile),
+  );
+  const checkoutProgress = [
+    { label: "Pedido", done: cartStepReady },
+    { label: "Entrega", done: deliveryStepReady },
+    { label: "Pago", done: paymentStepReady },
+  ];
 
   const isFormReady = useMemo(() => {
     const requiredFields = [
@@ -352,10 +383,32 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
           </div>
         ) : (
           <div className="cart-layout checkout-layout">
+            <div className="checkout-guide" aria-label="Progreso del checkout">
+              <div>
+                <p className="checkout-kicker">Compra segura</p>
+                <h2>Finaliza tu pedido sin complicarte</h2>
+                <p>
+                  Primero revisa tus libros, luego elige la sucursal BM Cargo y por ultimo confirma el metodo de pago.
+                </p>
+              </div>
+              <ol className="checkout-progress-list">
+                {checkoutProgress.map((step, index) => (
+                  <li key={step.label} className={step.done ? "is-done" : ""}>
+                    <span>{index + 1}</span>
+                    {step.label}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
             <section className="cart-list">
               <div className="checkout-section">
-                <p className="section-label">1. Resumen del carrito</p>
-                <h2>Libros seleccionados</h2>
+                <CheckoutStepTitle
+                  number="1"
+                  label="Tu pedido"
+                  title="Libros seleccionados"
+                  copy="Confirma cantidades y combos antes de completar tus datos."
+                />
               </div>
 
               {promoPairs.length ? (
@@ -415,7 +468,12 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
             <aside className="checkout-card">
               <form className="checkout-form" onSubmit={handleSubmitOrder}>
                 <section className="checkout-section">
-                  <p className="section-label">2. Tipo de envío</p>
+                  <CheckoutStepTitle
+                    number="2"
+                    label="Entrega"
+                    title="Donde retiraras tu pedido"
+                    copy="El costo se calcula segun Santo Domingo o el resto del pais."
+                  />
                   <div className="checkout-choice-grid">
                     <button
                       type="button"
@@ -438,7 +496,12 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 </section>
 
                 <section className="checkout-section">
-                  <p className="section-label">3. Datos de entrega</p>
+                  <CheckoutStepTitle
+                    number="3"
+                    label="Datos"
+                    title="Informacion de contacto"
+                    copy="Usaremos estos datos para confirmar el pedido y enviarte la direccion exacta de retiro."
+                  />
                   <div className="checkout-grid">
                     <label className="checkout-field">
                       <span>Nombre completo</span>
@@ -561,7 +624,12 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 </section>
 
                 <section className="checkout-section">
-                  <p className="section-label">4. Método de pago</p>
+                  <CheckoutStepTitle
+                    number="4"
+                    label="Pago"
+                    title="Elige como quieres pagar"
+                    copy="No pedimos datos de tarjeta en la web; el pago se confirma por comprobante o WhatsApp."
+                  />
                   <div className="checkout-choice-grid">
                     <button
                       type="button"
@@ -631,7 +699,12 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
                 </section>
 
                 <section className="checkout-section">
-                  <p className="section-label">5. Confirmación</p>
+                  <CheckoutStepTitle
+                    number="5"
+                    label="Total"
+                    title="Resumen final"
+                    copy="Revisa el total antes de enviar. Si hay 2x1, el descuento aparece aqui."
+                  />
                   <div className="summary-row">
                     <span>Libros</span>
                     <strong>{summary.total_units || 0}</strong>

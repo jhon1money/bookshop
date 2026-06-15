@@ -7,14 +7,14 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
       : null;
 
   return (
-    <article className="book-card">
+    <article className={`book-card ${book.promo_2x1 ? "has-promo-2x1" : ""}`}>
       <div className="book-badge-row">
         {book.oferta ? <span className="book-badge">Oferta</span> : null}
         {book.destacado ? <span className="book-flag-chip">Destacado</span> : null}
         {book.novedad ? <span className="book-flag-chip">Novedad</span> : null}
         {book.preventa ? <span className="book-flag-chip">Preventa</span> : null}
         {book.recomendado ? <span className="book-flag-chip">Recomendado</span> : null}
-        {book.promo_2x1 ? <span className="book-badge promo-badge">2x1</span> : null}
+        {book.promo_2x1 ? <span className="book-badge promo-badge promo-badge-animated">2x1</span> : null}
         <span className={`stock-pill ${book.stock > 0 ? "in-stock" : "out-stock"}`}>
           {book.stock > 0 ? `${book.stock} disponibles` : "Sin stock"}
         </span>
@@ -26,6 +26,7 @@ function BookCard({ book, onAddToCart, onOpenDetails }) {
         onClick={() => onOpenDetails(book)}
         aria-label={`Ver detalle de ${book.titulo}`}
       >
+        {book.promo_2x1 ? <span className="promo-2x1-corner" aria-hidden="true">2x1</span> : null}
         <span className="book-image-shell">
           <img src={imageSrc} alt={book.titulo} className="book-image" />
         </span>

@@ -17,6 +17,11 @@
   box-shadow: var(--shadow-medium);
 }
 
+.book-card.has-promo-2x1 {
+  border-color: rgba(198, 154, 59, 0.48);
+  box-shadow: 0 14px 30px rgba(198, 154, 59, 0.14);
+}
+
 .book-badge-row,
 .modal-meta {
   display: flex;
@@ -49,6 +54,13 @@
   color: #3f6720;
 }
 
+.promo-badge-animated {
+  background: var(--rose);
+  color: #fffaf2;
+  box-shadow: 0 8px 18px rgba(184, 75, 63, 0.22);
+  animation: bookPromoPulse 1.6s ease-in-out infinite;
+}
+
 .book-flag-chip {
   background: #eaf0ef;
   color: #255449;
@@ -66,6 +78,7 @@
 
 .book-media-button,
 .book-title-button {
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
@@ -82,6 +95,29 @@
 .book-detail-button:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
+}
+
+.promo-2x1-corner {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+  min-height: 3.2rem;
+  padding: 0.45rem;
+  border: 2px solid rgba(255, 250, 242, 0.82);
+  border-radius: 50%;
+  background: var(--rose);
+  color: #fffaf2;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 950;
+  box-shadow: 0 10px 22px rgba(24, 32, 42, 0.22);
+  transform: rotate(8deg);
+  animation: bookPromoWiggle 1.9s ease-in-out infinite;
 }
 
 .book-image-shell {
@@ -141,6 +177,10 @@
 }
 
 .book-promo-note {
+  width: fit-content;
+  padding: 0.34rem 0.48rem;
+  border-radius: 999px;
+  background: #fff3c4;
   color: var(--green);
   font-size: 0.78rem;
   font-weight: 800;
@@ -212,6 +252,33 @@
   border-color: rgba(37, 84, 73, 0.28);
 }
 
+@keyframes bookPromoPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes bookPromoWiggle {
+  0%,
+  100% {
+    transform: rotate(8deg) scale(1);
+  }
+  50% {
+    transform: rotate(-6deg) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-badge-animated,
+  .promo-2x1-corner {
+    animation: none;
+  }
+}
+
 @media (max-width: 560px) {
   .book-card {
     gap: 0.7rem;
@@ -236,6 +303,14 @@
 
   .book-card-actions {
     grid-template-columns: 1fr;
+  }
+
+  .promo-2x1-corner {
+    top: 0.45rem;
+    right: 0.45rem;
+    min-width: 2.65rem;
+    min-height: 2.65rem;
+    font-size: 0.78rem;
   }
 }
 
