@@ -2258,6 +2258,7 @@ def export_orders(current_user):
                 "Provincia",
                 "Municipio / sector",
                 "Sucursal BM Cargo",
+                "Dirección sucursal BM Cargo",
                 "Nota adicional",
                 "Método de pago",
                 "Estado de pago",
@@ -2288,6 +2289,7 @@ def export_orders(current_user):
                     escape_csv_value(getattr(order, "province", "")),
                     escape_csv_value(getattr(order, "municipality_sector", "")),
                     escape_csv_value(getattr(order, "bm_cargo_branch", "")),
+                    escape_csv_value(getattr(order, "bm_cargo_branch_address", "")),
                     escape_csv_value(getattr(order, "delivery_note", "")),
                     escape_csv_value(PAYMENT_METHOD_LABELS.get(getattr(order, "payment_method", ""), "")),
                     escape_csv_value(PAYMENT_STATUS_LABELS.get(getattr(order, "payment_status", ""), "")),
@@ -2401,8 +2403,7 @@ def checkout_order():
         )
         if not customer_address:
             customer_address = (
-                f"{municipality_sector}, {province}. "
-                f"Retiro BM Cargo: {bm_cargo_branch}. Dirección: {bm_cargo_branch_address}"
+                f"{municipality_sector}, {province}. Retiro BM Cargo: {bm_cargo_branch}"
             )
 
         order_lines = build_order_lines(data.get("items", []))
