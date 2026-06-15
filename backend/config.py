@@ -15,16 +15,21 @@ class Config:
     }
 
     DEBUG = os.getenv("FLASK_DEBUG", "false").lower() in {"true", "1", "yes"}
-    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", str(1024 * 1024)))
+    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", str(6 * 1024 * 1024)))
+    TRANSFER_RECEIPT_MAX_BYTES = int(os.getenv("TRANSFER_RECEIPT_MAX_BYTES", str(5 * 1024 * 1024)))
+    TRANSFER_RECEIPT_UPLOAD_DIR = os.getenv(
+        "TRANSFER_RECEIPT_UPLOAD_DIR",
+        os.path.join(os.getcwd(), "uploads", "receipts"),
+    )
     JWT_ISSUER = os.getenv("JWT_ISSUER", "bookshop-api")
     JWT_AUDIENCE = os.getenv("JWT_AUDIENCE", "bookshop-admin")
     JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "120"))
 
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://libreriajs.com").rstrip("/")
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://libreriasj.com").rstrip("/")
     CORS_ORIGINS = parse_origins(os.getenv("CORS_ORIGINS")) or [
         FRONTEND_URL,
-        "https://libreriajs.com",
-        "https://www.libreriajs.com",
+        "https://libreriasj.com",
+        "https://www.libreriasj.com",
         "https://bookshop-rho-ebon.vercel.app",
         
     ]

@@ -1251,9 +1251,19 @@ img {
   align-items: start;
 }
 
+.checkout-layout {
+  width: min(58rem, 100%);
+  margin: 0 auto;
+  grid-template-columns: 1fr;
+}
+
 .cart-list {
   display: grid;
   gap: 0.85rem;
+}
+
+.checkout-layout .cart-list {
+  position: static;
 }
 
 .cart-promo-pairs,
@@ -1330,15 +1340,72 @@ img {
   padding: 1rem;
 }
 
+.checkout-layout .checkout-card {
+  position: static;
+  padding: 1.15rem;
+}
+
 .checkout-card h2 {
   margin-top: 0.25rem;
   font-size: 1.75rem;
+}
+
+.checkout-section {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.checkout-section:first-child {
+  padding-top: 0;
+}
+
+.checkout-section:last-of-type {
+  border-bottom: 0;
 }
 
 .checkout-note {
   margin: -0.35rem 0 0.85rem;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.compact-note {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.checkout-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.checkout-choice {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 5.5rem;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: #fffaf1;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.checkout-choice:hover,
+.checkout-choice.is-selected {
+  border-color: var(--green);
+  box-shadow: 0 12px 28px rgba(37, 84, 73, 0.13);
+  transform: translateY(-1px);
+}
+
+.checkout-choice span {
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .checkout-form,
@@ -1370,6 +1437,75 @@ img {
 
 .checkout-field textarea {
   resize: vertical;
+}
+
+.field-error {
+  margin: 0;
+  color: #a92727;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.branch-address-preview {
+  display: block;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(37, 84, 73, 0.18);
+  border-radius: var(--radius-card);
+  background: #eef7f1;
+  color: var(--green);
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.bank-box,
+.payment-info {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: #fbf2e4;
+}
+
+.bank-box p,
+.payment-info {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.bank-box dl {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.bank-box dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+}
+
+.bank-box dt {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.bank-box dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 850;
+  text-align: right;
 }
 
 .checkout-error,
@@ -1413,6 +1549,57 @@ img {
   flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.85rem;
+}
+
+.checkout-confirmation {
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.checkout-confirmation h1 {
+  margin: 0;
+}
+
+.checkout-confirmation p {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.confirmation-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.confirmation-summary div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: #fffaf1;
+}
+
+.confirmation-summary span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.confirmation-summary strong {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.checkout-confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .book-modal-backdrop {
@@ -2368,6 +2555,10 @@ img {
     position: static;
   }
 
+  .checkout-layout .cart-list {
+    position: static;
+  }
+
   .admin-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2605,7 +2796,9 @@ img {
   .search-panel,
   .search-actions,
   .editorial-strip,
+  .checkout-choice-grid,
   .checkout-grid,
+  .confirmation-summary,
   .checkout-submit-bar,
   .admin-order-filters {
     grid-template-columns: 1fr;
@@ -2713,6 +2906,7 @@ img {
   .admin-tabs,
   .admin-inline-actions,
   .admin-form-actions,
+  .checkout-confirmation-actions,
   .checkout-secondary-actions,
   .info-actions,
   .admin-order-head,

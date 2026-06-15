@@ -53,16 +53,28 @@ class Order(db.Model):
 
     order_number = db.Column(db.String(50), unique=True)
     customer_name = db.Column(db.String(150))
+    customer_cedula = db.Column(db.String(30))
     customer_email = db.Column(db.String(150))
     customer_phone = db.Column(db.String(50))
     customer_address = db.Column(db.String(250))
+    delivery_type = db.Column(db.String(50))
+    province = db.Column(db.String(100))
+    municipality_sector = db.Column(db.String(150))
+    bm_cargo_branch = db.Column(db.String(150))
+    bm_cargo_branch_address = db.Column(db.String(300))
+    delivery_note = db.Column(db.Text)
+    payment_method = db.Column(db.String(50))
+    payment_status = db.Column(db.String(50), default="pending")
+    order_status = db.Column(db.String(50), default="pending")
     status = db.Column(db.String(50), default="pending")
 
     subtotal = db.Column(db.Float)
     discount_rate = db.Column(db.Float, default=0)
     discount_amount = db.Column(db.Float, default=0)
     promo_discount_amount = db.Column(db.Float, default=0)
+    shipping_cost = db.Column(db.Float, default=0)
     total = db.Column(db.Float)
+    transfer_receipt_url = db.Column(db.String(300))
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -80,6 +92,9 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
     price = db.Column(db.Float, nullable=False)
+    product_name = db.Column(db.String(200))
+    unit_price = db.Column(db.Float)
+    total_price = db.Column(db.Float)
 
     book = db.relationship("Book", back_populates="order_items")
     order = db.relationship("Order", back_populates="items")

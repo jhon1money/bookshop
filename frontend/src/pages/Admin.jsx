@@ -14,6 +14,7 @@ import {
   exportAdminOrdersCsv,
   updateAdminBook,
   updateAdminOrderStatus,
+  updateAdminOrderPaymentStatus,
   updateAdminSiteContent,
 } from "../services/api";
 import usePageMeta from "../hooks/usePageMeta";
@@ -26,8 +27,17 @@ const ORDER_STATUS_OPTIONS = [
   { value: "confirmed", label: "Confirmada" },
   { value: "processing", label: "Preparando" },
   { value: "shipped", label: "Enviada" },
+  { value: "ready_for_pickup", label: "Lista para retirar" },
   { value: "delivered", label: "Entregada" },
   { value: "cancelled", label: "Cancelada" },
+];
+
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "pending", label: "Pendiente" },
+  { value: "transfer_sent", label: "Transferencia enviada" },
+  { value: "confirmed", label: "Pago confirmado" },
+  { value: "pending_whatsapp", label: "Pendiente por WhatsApp" },
+  { value: "rejected", label: "Rechazado" },
 ];
 
 const EMPTY_BOOK_FORM = {
@@ -405,6 +415,19 @@ function handleLogout() {
     }
   }
 
+  async function handlePaymentStatusChange(orderId, nextStatus) {
+    setError("");
+    setSuccess("");
+
+    try {
+      await updateAdminOrderPaymentStatus(token, orderId, nextStatus);
+      setSuccess("Estado de pago actualizado.");
+      await loadAdminData(token, orderFilters);
+    } catch (statusError) {
+      setError(statusError.message || "No se actualizó el pago.");
+    }
+  }
+
   async function handleExportOrdersCsv() {
     try {
       const blob = await exportAdminOrdersCsv(token, orderFilters);
@@ -433,8 +456,10 @@ function handleLogout() {
           <tr>
             <td>${escapeHtml(order.order_number)}</td>
             <td>${escapeHtml(order.customer_name)}</td>
+            <td>${escapeHtml(order.province || "")}</td>
             <td>${escapeHtml(formatDate(order.date))}</td>
             <td>${escapeHtml(ORDER_STATUS_OPTIONS.find((item) => item.value === order.status)?.label || order.status)}</td>
+            <td>${escapeHtml(order.payment_status_label || order.payment_status || "")}</td>
             <td>RD$ ${Number(order.total || 0).toFixed(2)}</td>
           </tr>`,
       )
@@ -457,7 +482,7 @@ function handleLogout() {
           <p>Generado el ${new Date().toLocaleString("es-DO")}</p>
           <table>
             <thead>
-              <tr><th>Orden</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Total</th></tr>
+              <tr><th>Orden</th><th>Cliente</th><th>Provincia</th><th>Fecha</th><th>Estado</th><th>Pago</th><th>Total</th></tr>
             </thead>
             <tbody>${rows}</tbody>
           </table>
@@ -997,6 +1022,8 @@ function handleLogout() {
                           {order.customer_name} | {order.customer_email}
                         </span>
                         <span>{order.customer_phone || "Sin teléfono"}</span>
+                        {order.customer_cedula ? <span>Cédula: {order.customer_cedula}</span> : null}
+                        {order.payment_status_label ? <span>Pago: {order.payment_status_label}</span> : null}
                       </div>
                       <div className="admin-order-meta">
                         <small>{formatDate(order.date)}</small>
@@ -1004,7 +1031,18 @@ function handleLogout() {
                       </div>
                     </div>
 
-                    <p className="admin-order-address">{order.customer_address}</p>
+                    <p className="admin-order-address">
+                      {order.delivery_type_label || "Tipo de envío no indicado"} | {order.province || "Provincia no indicada"} |{" "}
+                      {order.municipality_sector || "Municipio no indicado"} | BM Cargo:{" "}
+                      {order.bm_cargo_branch || "No indicado"}
+                    </p>
+                    {order.bm_cargo_branch_address ? (
+                      <p className="admin-order-address">Dirección BM Cargo: {order.bm_cargo_branch_address}</p>
+                    ) : null}
+                    {order.delivery_note ? <p className="admin-order-address">Nota: {order.delivery_note}</p> : null}
+                    {order.transfer_receipt_url ? (
+                      <p className="admin-order-address">Comprobante: {order.transfer_receipt_url}</p>
+                    ) : null}
 
                     <div className="admin-order-items">
                       {order.items.map((item) => (
@@ -1027,6 +1065,10 @@ function handleLogout() {
                           <strong>-{formatCurrency(order.discount_amount)}</strong>
                         </div>
                       ) : null}
+                      <div className="admin-order-item">
+                        <span>Envío BM Cargo</span>
+                        <strong>{formatCurrency(order.shipping_cost)}</strong>
+                      </div>
                     </div>
 
                     <div className="admin-order-actions">
@@ -1037,6 +1079,19 @@ function handleLogout() {
                           onChange={(event) => handleStatusChange(order.id, event.target.value)}
                         >
                           {ORDER_STATUS_OPTIONS.map((statusOption) => (
+                            <option key={statusOption.value} value={statusOption.value}>
+                              {statusOption.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="checkout-field compact-field">
+                        <span>Pago</span>
+                        <select
+                          value={order.payment_status || "pending"}
+                          onChange={(event) => handlePaymentStatusChange(order.id, event.target.value)}
+                        >
+                          {PAYMENT_STATUS_OPTIONS.map((statusOption) => (
                             <option key={statusOption.value} value={statusOption.value}>
                               {statusOption.label}
                             </option>

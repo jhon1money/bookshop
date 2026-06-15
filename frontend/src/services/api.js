@@ -56,12 +56,15 @@ export async function getSiteContent() {
 }
 
 export async function createOrder(payload) {
-  const response = await fetch(`${API_URL}/api/orders`, {
+  const isFormData = payload instanceof FormData;
+  const response = await fetch(`${API_URL}${isFormData ? "/api/checkout" : "/api/orders"}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: isFormData
+      ? undefined
+      : {
+          "Content-Type": "application/json",
+        },
+    body: isFormData ? payload : JSON.stringify(payload),
   });
   const data = await readJson(response);
 
@@ -275,6 +278,21 @@ export async function updateAdminOrderStatus(token, orderId, status) {
 
   if (!response.ok) {
     throw new Error(data.message || "No se actualizó.");
+  }
+
+  return data;
+}
+
+export async function updateAdminOrderPaymentStatus(token, orderId, paymentStatus) {
+  const response = await fetch(`${API_URL}/api/admin/orders/${orderId}/payment-status`, {
+    method: "PUT",
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ payment_status: paymentStatus }),
+  });
+  const data = await readJson(response);
+
+  if (!response.ok) {
+    throw new Error(data.message || "No se actualizó el pago.");
   }
 
   return data;

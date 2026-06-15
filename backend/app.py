@@ -2,6 +2,7 @@ import csv
 import datetime
 import html
 import json
+import os
 import re
 import smtplib
 import time
@@ -16,6 +17,7 @@ from flask_cors import CORS
 from sqlalchemy import inspect, text
 from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
 
 from config import Config
 from models import Admin, BlogComment, BlogPost, Book, Category, Order, OrderItem, SiteSection, db
@@ -44,6 +46,84 @@ HTML_TAG_RE = re.compile(r"<[^>]+>")
 ORDER_NUMBER_RE = re.compile(r"^BS-\d{8}-\d{5}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 RATE_LIMIT_BUCKETS = {}
+FORMDATA_ENDPOINTS = {"/api/checkout"}
+LOCAL_DELIVERY_PROVINCES = {"Distrito Nacional", "Santo Domingo"}
+DELIVERY_TYPE_LABELS = {
+    "local": "Santo Domingo / Distrito Nacional",
+    "province": "Otras provincias",
+}
+SHIPPING_COSTS = {
+    "local": 250,
+    "province": 300,
+}
+PAYMENT_METHOD_LABELS = {
+    "transfer": "Transferencia bancaria",
+    "card_whatsapp": "Tarjeta / pago coordinado por WhatsApp",
+}
+PAYMENT_STATUS_LABELS = {
+    "pending": "Pendiente",
+    "transfer_sent": "Transferencia enviada",
+    "confirmed": "Pago confirmado",
+    "pending_whatsapp": "Pendiente por WhatsApp",
+    "rejected": "Rechazado",
+}
+ALLOWED_RECEIPT_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "pdf"}
+BM_CARGO_BRANCH_ADDRESSES = {
+    "Piantini": "Av. Abraham Lincoln, No. 1009, Piantini, Distrito Nacional",
+    "Oficina Principal (Piantini)": "Av. Abraham Lincoln, No. 1009, Piantini, Distrito Nacional",
+    "Arroyo Hondo": "Doctores Mallén, No. 28 A, Arroyo Hondo, Distrito Nacional",
+    "El Millón": "Plaza Roaldi, C/ Guarocuya, Esq. Presa de Valdesia, El Millón, Distrito Nacional",
+    "Bella Vista": "Ave. Rómulo Betancourt, No. 491, Plaza Maria Colombina, 1er nivel, Bella Vista, Distrito Nacional",
+    "Las Praderas": "Av. Gustavo Mejía Ricart No. 121, Esq. Teodoro Chassériau, Las Praderas, Distrito Nacional",
+    "Evaristo Morales": "Calle Paseo de los Locutores, No. 45, Evaristo Morales, Distrito Nacional",
+    "Gazcue": "Calle Josefa Perdomo, No. 202, Gazcue, Distrito Nacional",
+    "Naco": "Ave. Gustavo Mejía Ricart, No. 7, Naco, Distrito Nacional",
+    "Sambil": "Local SM-5, Primer Nivel, con acceso desde la San Martín, Sambil, Distrito Nacional",
+    "La Julia / Winston Churchill": "Ave. Jiménez Moya, #51, Plaza Cuvas, Ensanche La Julia, Distrito Nacional",
+    "La Julia (Av. Winston Churchill)": "Ave. Jiménez Moya, #51, Plaza Cuvas, Ensanche La Julia, Distrito Nacional",
+    "Los Alcarrizos": "Autopista Duarte, Km. 14, Plaza Ferrecentro, Local A, Los Alcarrizos, Santo Domingo",
+    "Herrera / Av. Luperón": "Ave. Luperón No. 77, Plaza Mall 77, Local 3 B, Herrera, Santo Domingo Oeste",
+    "Herrera (Av. Luperón)": "Ave. Luperón No. 77, Plaza Mall 77, Local 3 B, Herrera, Santo Domingo Oeste",
+    "Villa Mella": "Ave. Hermanas Mirabal, No. 328, Plaza Riverside, Local 110, Santo Domingo Norte",
+    "Cancino": "Av. Charles de Gaulle, Esq. Gabriela Mistral 68, Santo Domingo Este",
+    "Ciudad Juan Bosch": "Avenida Camino Real, esquina Calle Carmen Quidiello de Bosch, Plaza La Marquesa I, 2do piso, Local 87, Ciudad Juan Bosch, Santo Domingo Este",
+    "San Isidro": "Autopista Coronel Rafael Tomás Fernández Domínguez (Aut. San Isidro), Plaza Comercial Casa Blanca, 1er nivel, No. 101, Santo Domingo Este",
+    "Ensanche Ozama": "Calle Bonaire No. 62, esq. Masonería, Ensanche Ozama, Santo Domingo Este",
+    "Los Mina": "Ave. San Vicente de Paúl, No. 52, Estación de combustible Total Aurora, Los Mina, Santo Domingo Este",
+    "Boca Chica": "Ave. 20 de Diciembre, No. 16B, Boca Chica",
+    "Santiago Jardines Metropolitanos": "Calle 7, No. 22, Jardines Metropolitanos, Santiago",
+    "Santiago Gurabo": "Carretera turística KM 6, Plaza Jardín Luperón, Módulo 102, Gurabo, Santiago",
+    "Santiago Villa Olga": "Calle Juan Bautista Almonte, #9, Módulo 102, Santiago",
+    "Santiago Colinas Mall": "Ave. 27 de Febrero, Colinas Mall Módulo 237, Las Colinas, Santiago",
+    "Higüey": "Calle B No. 7, próximo a la Ave. Juan XXIII, Higüey",
+    "Bávaro": "Naves San Rafael, Av. Barceló KM. 5, Local 3, Bávaro",
+    "Friusa": "Plaza Progreso, Local 104, Friusa, Bávaro",
+    "Punta Cana": "Punta Cana Village, Local 60-A, Punta Cana",
+    "Cap Cana": "Green Village Plaza, Local No. 11, Cap Cana, Punta Cana",
+    "La Romana": "Calle Francisco Richiez, No. 15, Esq. Calle Altagracia, Plaza Galería, Local 2, La Romana",
+    "Casa de Campo": "Altos de Chavón, Local I2 (Antigua Esquinita PBO), La Romana",
+    "San Cristóbal": "Calle Ramón Matías Mella, No. 3, entre Ave. Constitución y General Cabral, San Cristóbal",
+    "Haina": "Calle Guinea, No. 3, Plaza J&J, Local 1-1, Sector Piedra Blanca Norte, Bajos de Haina",
+    "La Vega": "Calle Chefito Batista, No. 28, Plaza Wendy, La Vega",
+    "Constanza": "Av. Antonio Abud Isaac, No. 102, Local No. 6, Edificio Plaza Carmen, Constanza",
+    "Jarabacoa": "Calle Hermanas Mirabal, Plaza Hostal Jarabacoa, Módulo 205, Jarabacoa",
+    "Puerto Plata": "Av. Circunvalación Sur (Manolo Tavárez Justo), Plaza Turisol, Local 33-34, Primer Módulo, Puerto Plata",
+    "Sosúa": "Carretera Sosúa-Cabarete, Plaza Erick Hauser I, Local 1-B, Sosúa",
+    "San Francisco de Macorís": "Ave. Los Mártires, No. 16, San Francisco de Macorís",
+    "Baní": "Ave. Presidente Billini, No. 22, Plaza Villar, Local No. 5, Baní",
+    "Azua": "Ave. Duarte, No. 25, Azua",
+    "Barahona": "Luis Eduardo del Monte, No. 66, Barahona",
+    "San Juan de la Maguana": "Pedro J. Heyaime, Plaza Comercial Wao Gallery, Local No. 7-B, San Juan de la Maguana",
+    "Nagua": "Francisco Yapor, esq. Enriquillo, Jhay Plaza, Nagua, María Trinidad Sánchez",
+    "Cabrera": "Plaza Comercial del Parque, Calle Lorenzo Alvarez esq. Gabriel Acosta, Cabrera, María Trinidad Sánchez",
+    "Las Terrenas": "Calle Duarte #141, Plaza Italia, Las Terrenas, Samaná",
+    "Bonao": "Calle Padre Billini esq. Luperón, Edificio Samuel Miller, Local #1B, Bonao, Monseñor Nouel",
+    "Cotuí": "Calle 27 de Febrero No. 16, Plaza Doña Nena, Local No. 101, Cotuí, Sánchez Ramírez",
+    "Moca": "Calle Club de Leones, No. 1, Reparto del Este, Moca",
+    "Hato Mayor": "Calle Pedro Guillermo, No. 26, Hato Mayor del Rey",
+    "Monte Plata": "Calle Duarte #20, Monte Plata",
+    "San Pedro de Macorís": "Ave. Francisco Alberto Caamaño Deñó, Plaza Los Colonos, Local 1-3, San Pedro de Macorís",
+}
 
 
 def json_response(code, error, message, data=None):
@@ -72,7 +152,7 @@ def rate_limit_key():
     path = request.path
     if path == "/api/login":
         return "login", 8, 300
-    if path.startswith("/api/orders"):
+    if path.startswith("/api/orders") or path == "/api/checkout":
         return "orders", 20, 300
     if path.startswith("/api/blog"):
         return "blog", 24, 300
@@ -109,7 +189,12 @@ def security_gate():
         return json_response(429, True, "Demasiados intentos. Espera un poco.")
 
     if request.method in {"POST", "PUT", "PATCH"} and request.path.startswith("/api/"):
-        if not request.is_json:
+        is_checkout_form = (
+            request.path in FORMDATA_ENDPOINTS
+            and request.content_type
+            and request.content_type.startswith(("multipart/form-data", "application/x-www-form-urlencoded"))
+        )
+        if not request.is_json and not is_checkout_form:
             return json_response(415, True, "Envía datos en formato JSON.")
 
     return None
@@ -279,12 +364,39 @@ def ensure_order_schema():
     existing_columns = {column["name"] for column in inspector.get_columns("order")}
     missing_sql = {
         "order_number": 'ALTER TABLE "order" ADD COLUMN order_number VARCHAR(50)',
+        "customer_cedula": 'ALTER TABLE "order" ADD COLUMN customer_cedula VARCHAR(30)',
         "customer_email": 'ALTER TABLE "order" ADD COLUMN customer_email VARCHAR(150)',
-        "status": 'ALTER TABLE "order" ADD COLUMN status VARCHAR(50) DEFAULT "pending"',
+        "delivery_type": 'ALTER TABLE "order" ADD COLUMN delivery_type VARCHAR(50)',
+        "province": 'ALTER TABLE "order" ADD COLUMN province VARCHAR(100)',
+        "municipality_sector": 'ALTER TABLE "order" ADD COLUMN municipality_sector VARCHAR(150)',
+        "bm_cargo_branch": 'ALTER TABLE "order" ADD COLUMN bm_cargo_branch VARCHAR(150)',
+        "bm_cargo_branch_address": 'ALTER TABLE "order" ADD COLUMN bm_cargo_branch_address VARCHAR(300)',
+        "delivery_note": 'ALTER TABLE "order" ADD COLUMN delivery_note TEXT',
+        "payment_method": 'ALTER TABLE "order" ADD COLUMN payment_method VARCHAR(50)',
+        "payment_status": 'ALTER TABLE "order" ADD COLUMN payment_status VARCHAR(50) DEFAULT \'pending\'',
+        "order_status": 'ALTER TABLE "order" ADD COLUMN order_status VARCHAR(50) DEFAULT \'pending\'',
+        "status": 'ALTER TABLE "order" ADD COLUMN status VARCHAR(50) DEFAULT \'pending\'',
         "subtotal": 'ALTER TABLE "order" ADD COLUMN subtotal FLOAT',
         "discount_rate": 'ALTER TABLE "order" ADD COLUMN discount_rate FLOAT DEFAULT 0',
         "discount_amount": 'ALTER TABLE "order" ADD COLUMN discount_amount FLOAT DEFAULT 0',
         "promo_discount_amount": 'ALTER TABLE "order" ADD COLUMN promo_discount_amount FLOAT DEFAULT 0',
+        "shipping_cost": 'ALTER TABLE "order" ADD COLUMN shipping_cost FLOAT DEFAULT 0',
+        "transfer_receipt_url": 'ALTER TABLE "order" ADD COLUMN transfer_receipt_url VARCHAR(300)',
+    }
+
+    with db.engine.begin() as connection:
+        for column_name, sql_statement in missing_sql.items():
+            if column_name not in existing_columns:
+                connection.execute(text(sql_statement))
+
+
+def ensure_order_item_schema():
+    inspector = inspect(db.engine)
+    existing_columns = {column["name"] for column in inspector.get_columns("order_item")}
+    missing_sql = {
+        "product_name": "ALTER TABLE order_item ADD COLUMN product_name VARCHAR(200)",
+        "unit_price": "ALTER TABLE order_item ADD COLUMN unit_price FLOAT",
+        "total_price": "ALTER TABLE order_item ADD COLUMN total_price FLOAT",
     }
 
     with db.engine.begin() as connection:
@@ -446,6 +558,7 @@ def seed_site_sections():
 with app.app_context():
     db.create_all()
     ensure_order_schema()
+    ensure_order_item_schema()
     ensure_book_schema()
     seed_site_sections()
 
@@ -726,14 +839,18 @@ def sync_order_inventory(previous_status, new_status, order):
 
 
 def serialize_order_item(item):
+    unit_price = item.unit_price if item.unit_price is not None else item.price
+    line_total = item.total_price if item.total_price is not None else float(unit_price) * item.quantity
     return {
         "id": item.id,
         "book_id": item.book_id,
-        "titulo": item.book.titulo if item.book else "Libro eliminado",
+        "titulo": item.product_name or (item.book.titulo if item.book else "Libro eliminado"),
         "autor": item.book.autor if item.book else "",
         "quantity": item.quantity,
-        "price": item.price,
-        "line_total": round(float(item.price) * item.quantity, 2),
+        "price": unit_price,
+        "unit_price": unit_price,
+        "line_total": round(float(line_total), 2),
+        "total_price": round(float(line_total), 2),
     }
 
 
@@ -742,21 +859,44 @@ def serialize_order(order):
     subtotal = float(order.subtotal) if order.subtotal is not None else items_subtotal
     discount_amount = float(order.discount_amount or 0)
     promo_discount_amount = float(order.promo_discount_amount or 0)
-    total = float(order.total) if order.total is not None else max(subtotal - discount_amount - promo_discount_amount, 0)
+    shipping_cost = float(getattr(order, "shipping_cost", 0) or 0)
+    total = (
+        float(order.total)
+        if order.total is not None
+        else max(subtotal - discount_amount - promo_discount_amount + shipping_cost, 0)
+    )
+    status = getattr(order, "order_status", None) or order.status or "pending"
+    payment_method = getattr(order, "payment_method", "") or ""
+    payment_status = getattr(order, "payment_status", "") or "pending"
 
     return {
         "id": order.id,
         "order_number": order.order_number,
         "customer_name": order.customer_name,
+        "customer_cedula": getattr(order, "customer_cedula", "") or "",
         "customer_email": order.customer_email,
         "customer_phone": order.customer_phone,
         "customer_address": order.customer_address,
-        "status": order.status,
+        "delivery_type": getattr(order, "delivery_type", "") or "",
+        "delivery_type_label": DELIVERY_TYPE_LABELS.get(getattr(order, "delivery_type", ""), ""),
+        "province": getattr(order, "province", "") or "",
+        "municipality_sector": getattr(order, "municipality_sector", "") or "",
+        "bm_cargo_branch": getattr(order, "bm_cargo_branch", "") or "",
+        "bm_cargo_branch_address": getattr(order, "bm_cargo_branch_address", "") or "",
+        "delivery_note": getattr(order, "delivery_note", "") or "",
+        "payment_method": payment_method,
+        "payment_method_label": PAYMENT_METHOD_LABELS.get(payment_method, payment_method),
+        "payment_status": payment_status,
+        "payment_status_label": PAYMENT_STATUS_LABELS.get(payment_status, payment_status),
+        "order_status": status,
+        "status": status,
         "subtotal": round(subtotal, 2),
         "discount_rate": float(order.discount_rate or 0),
         "discount_amount": round(discount_amount, 2),
         "promo_discount_amount": round(promo_discount_amount, 2),
+        "shipping_cost": round(shipping_cost, 2),
         "total": round(total, 2),
+        "transfer_receipt_url": getattr(order, "transfer_receipt_url", "") or "",
         "date": order.date.isoformat() if order.date else None,
         "items_count": sum(item.quantity for item in order.items),
         "items": [serialize_order_item(item) for item in order.items],
@@ -886,22 +1026,171 @@ def build_order_lines(items):
     return order_lines
 
 
+def normalize_delivery_type(value, province=""):
+    normalized = normalize_text(value, "Tipo de envío", 50).lower()
+    aliases = {
+        "santo_domingo": "local",
+        "santo-domingo": "local",
+        "local": "local",
+        "dn": "local",
+        "province": "province",
+        "provinces": "province",
+        "other": "province",
+        "otras_provincias": "province",
+        "otras-provincias": "province",
+    }
+    delivery_type = aliases.get(normalized, "")
+    if not delivery_type and province:
+        delivery_type = "local" if province in LOCAL_DELIVERY_PROVINCES else "province"
+    if delivery_type not in SHIPPING_COSTS:
+        raise ValueError("Tipo de envío inválido.")
+    return delivery_type
+
+
+def calculate_shipping_cost(delivery_type, province):
+    delivery_type = normalize_delivery_type(delivery_type, province)
+    if delivery_type == "local" and province not in LOCAL_DELIVERY_PROVINCES:
+        raise ValueError("Selecciona Distrito Nacional o Santo Domingo para este tipo de envío.")
+    if delivery_type == "province" and province in LOCAL_DELIVERY_PROVINCES:
+        raise ValueError("Para Santo Domingo o Distrito Nacional usa el tipo de envío local.")
+    return SHIPPING_COSTS[delivery_type]
+
+
+def normalize_payment_method(value):
+    payment_method = normalize_text(value, "Método de pago", 50, required=True).lower()
+    aliases = {
+        "transfer": "transfer",
+        "transferencia": "transfer",
+        "transferencia_bancaria": "transfer",
+        "bank_transfer": "transfer",
+        "card": "card_whatsapp",
+        "tarjeta": "card_whatsapp",
+        "card_whatsapp": "card_whatsapp",
+        "tarjeta_whatsapp": "card_whatsapp",
+        "whatsapp": "card_whatsapp",
+    }
+    normalized = aliases.get(payment_method, "")
+    if not normalized:
+        raise ValueError("Método de pago inválido.")
+    return normalized
+
+
+def normalize_payment_status(status):
+    allowed_statuses = {
+        "pending": "pending",
+        "pendiente": "pending",
+        "transfer_sent": "transfer_sent",
+        "transferencia_enviada": "transfer_sent",
+        "transferencia enviada": "transfer_sent",
+        "confirmed": "confirmed",
+        "pago_confirmado": "confirmed",
+        "pago confirmado": "confirmed",
+        "pending_whatsapp": "pending_whatsapp",
+        "pendiente_whatsapp": "pending_whatsapp",
+        "pendiente por whatsapp": "pending_whatsapp",
+        "rejected": "rejected",
+        "rechazado": "rejected",
+        "rechazada": "rejected",
+    }
+    return allowed_statuses.get((status or "").strip().lower(), "")
+
+
+def normalize_branch_lookup_key(value):
+    cleaned = normalize_text(value, "Sucursal BM Cargo", 180)
+    if cleaned.endswith(")") and " (" in cleaned:
+        cleaned = cleaned.rsplit(" (", 1)[0].strip()
+    return cleaned
+
+
+def resolve_bm_cargo_branch_address(branch_name):
+    lookup_key = normalize_branch_lookup_key(branch_name)
+    if not lookup_key:
+        return ""
+    if lookup_key in BM_CARGO_BRANCH_ADDRESSES:
+        return BM_CARGO_BRANCH_ADDRESSES[lookup_key]
+
+    normalized_lookup = lookup_key.lower()
+    for branch, address in BM_CARGO_BRANCH_ADDRESSES.items():
+        if branch.lower() == normalized_lookup:
+            return address
+
+    return ""
+
+
+def get_checkout_body():
+    if request.is_json:
+        return get_json_body()
+
+    data = dict(request.form)
+    raw_items = data.get("items", "[]")
+    try:
+        data["items"] = json.loads(raw_items)
+    except (TypeError, json.JSONDecodeError):
+        raise ValueError("Carrito inválido.")
+    return data
+
+
+def validate_transfer_receipt(file_storage):
+    if not file_storage or not file_storage.filename:
+        raise ValueError("Debes cargar el comprobante de transferencia.")
+
+    filename = secure_filename(file_storage.filename)
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if extension not in ALLOWED_RECEIPT_EXTENSIONS:
+        raise ValueError("El comprobante debe ser jpg, jpeg, png, webp o pdf.")
+
+    file_storage.stream.seek(0, os.SEEK_END)
+    file_size = file_storage.stream.tell()
+    file_storage.stream.seek(0)
+
+    if file_size <= 0:
+        raise ValueError("El comprobante está vacío.")
+    if file_size > app.config.get("TRANSFER_RECEIPT_MAX_BYTES", 5 * 1024 * 1024):
+        raise ValueError("El comprobante no puede exceder 5MB.")
+
+    return filename, extension
+
+
+def save_transfer_receipt(file_storage, order):
+    filename, extension = validate_transfer_receipt(file_storage)
+    upload_dir = app.config.get("TRANSFER_RECEIPT_UPLOAD_DIR")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    base_name = os.path.splitext(filename)[0][:70] or "comprobante"
+    stored_filename = secure_filename(
+        f"{order.order_number}-{int(time.time())}-{base_name}.{extension}"
+    )
+    file_path = os.path.join(upload_dir, stored_filename)
+    file_storage.save(file_path)
+    return f"uploads/receipts/{stored_filename}"
+
+
 def build_whatsapp_message(order, items):
     lines = [
-        f"Hola, quiero confirmar mi pedido {order.order_number}.",
+        "Nueva orden en Librería SJ",
         "",
-        f"Cliente: {order.customer_name}",
-        f"Teléfono: {order.customer_phone}",
-        f"Correo: {order.customer_email}",
-        f"Dirección: {order.customer_address}",
+        f"Número de orden: {order.order_number}",
+        f"Nombre del cliente: {order.customer_name}",
+        f"Cédula: {getattr(order, 'customer_cedula', '') or 'No indicada'}",
+        f"WhatsApp: {order.customer_phone}",
+        f"Correo: {order.customer_email or 'No indicado'}",
+        f"Provincia: {getattr(order, 'province', '') or 'No indicada'}",
+        f"Municipio / sector: {getattr(order, 'municipality_sector', '') or 'No indicado'}",
+        f"Sucursal BM Cargo: {getattr(order, 'bm_cargo_branch', '') or 'No indicada'}",
+        f"Dirección sucursal BM Cargo: {getattr(order, 'bm_cargo_branch_address', '') or 'No indicada'}",
+        f"Nota adicional: {getattr(order, 'delivery_note', '') or 'Sin nota'}",
         "",
-        "Libros solicitados:",
+        "Productos:",
     ]
 
     for item in items:
         lines.append(
-            f"- {item['titulo']} x{item['quantity']} | RD$ {item['price']:.2f} c/u"
+            f"* {item['titulo']} x{item['quantity']} - RD$ {float(item['line_total']):.2f}"
         )
+
+    payment_method = getattr(order, "payment_method", "") or ""
+    payment_status = getattr(order, "payment_status", "") or "pending"
+    receipt_url = getattr(order, "transfer_receipt_url", "") or "No aplica"
 
     lines.extend(
         [
@@ -909,10 +1198,17 @@ def build_whatsapp_message(order, items):
             f"Subtotal: RD$ {float(order.subtotal or 0):.2f}",
             f"Promoción 2x1: -RD$ {float(order.promo_discount_amount or 0):.2f}",
             f"Descuento por cantidad: -RD$ {float(order.discount_amount or 0):.2f}",
-            f"Total del pedido: RD$ {order.total:.2f}",
-            "Gracias.",
+            f"Envío: RD$ {float(getattr(order, 'shipping_cost', 0) or 0):.2f}",
+            f"Total final: RD$ {float(order.total or 0):.2f}",
+            "",
+            f"Método de pago: {PAYMENT_METHOD_LABELS.get(payment_method, payment_method)}",
+            f"Estado del pago: {PAYMENT_STATUS_LABELS.get(payment_status, payment_status)}",
+            f"Comprobante: {receipt_url}",
         ]
     )
+
+    if payment_method == "card_whatsapp":
+        lines.extend(["", "El cliente desea pagar con tarjeta por WhatsApp."])
 
     return "\n".join(lines)
 
@@ -968,7 +1264,14 @@ def send_order_email(order, items):
             f"Subtotal: RD$ {float(order.subtotal or 0):.2f}",
             f"Promoción 2x1: -RD$ {float(order.promo_discount_amount or 0):.2f}",
             f"Descuento por cantidad: -RD$ {float(order.discount_amount or 0):.2f}",
+            f"Envío: RD$ {float(getattr(order, 'shipping_cost', 0) or 0):.2f}",
             f"Total: RD$ {order.total:.2f}",
+            "",
+            "Datos de retiro BM Cargo:",
+            f"Sucursal: {getattr(order, 'bm_cargo_branch', '') or 'No indicada'}",
+            f"Dirección completa: {getattr(order, 'bm_cargo_branch_address', '') or 'No indicada'}",
+            f"Provincia: {getattr(order, 'province', '') or 'No indicada'}",
+            f"Municipio / sector: {getattr(order, 'municipality_sector', '') or 'No indicado'}",
             f"Dirección de entrega: {order.customer_address}",
             "",
             "Gracias por comprar libros físicos con nosotros.",
@@ -977,6 +1280,10 @@ def send_order_email(order, items):
 
     safe_customer_name = escape_html(order.customer_name)
     safe_customer_address = escape_html(order.customer_address)
+    safe_bm_cargo_branch = escape_html(getattr(order, "bm_cargo_branch", "") or "No indicada")
+    safe_bm_cargo_branch_address = escape_html(getattr(order, "bm_cargo_branch_address", "") or "No indicada")
+    safe_province = escape_html(getattr(order, "province", "") or "No indicada")
+    safe_municipality_sector = escape_html(getattr(order, "municipality_sector", "") or "No indicado")
     safe_order_number = escape_html(order.order_number)
     html_items = "".join(
         [
@@ -1031,12 +1338,36 @@ def send_order_email(order, items):
                       <td style="padding:6px 16px;text-align:right;font-size:14px;font-weight:700;">-RD$ {float(order.discount_amount or 0):.2f}</td>
                     </tr>
                     <tr>
+                      <td style="padding:6px 16px;font-size:14px;color:#555;">Envío</td>
+                      <td style="padding:6px 16px;text-align:right;font-size:14px;font-weight:700;">RD$ {float(getattr(order, 'shipping_cost', 0) or 0):.2f}</td>
+                    </tr>
+                    <tr>
                       <td style="padding:14px 16px;font-size:14px;color:#555;">Total</td>
                       <td style="padding:14px 16px;text-align:right;font-size:16px;font-weight:700;">RD$ {order.total:.2f}</td>
                     </tr>
+                  </table>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;background:#fff9ee;border:1px solid #eadfcb;border-radius:14px;">
                     <tr>
-                      <td colspan="2" style="padding:0 16px 16px;font-size:14px;line-height:1.6;color:#555;">
-                        Dirección de entrega: {safe_customer_address}
+                      <td style="padding:16px 16px 4px;font-size:12px;font-weight:700;color:#255449;text-transform:uppercase;letter-spacing:0.02em;">Retiro en BM Cargo</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:4px 16px;font-size:14px;line-height:1.6;color:#1a1a1a;">
+                        <strong>Sucursal:</strong> {safe_bm_cargo_branch}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:4px 16px;font-size:14px;line-height:1.6;color:#1a1a1a;">
+                        <strong>Dirección completa:</strong> {safe_bm_cargo_branch_address}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:4px 16px;font-size:14px;line-height:1.6;color:#555;">
+                        <strong>Provincia:</strong> {safe_province} &nbsp; | &nbsp; <strong>Municipio / sector:</strong> {safe_municipality_sector}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:4px 16px 16px;font-size:14px;line-height:1.6;color:#555;">
+                        <strong>Referencia de entrega:</strong> {safe_customer_address}
                       </td>
                     </tr>
                   </table>
@@ -1073,6 +1404,9 @@ def normalize_order_status(status):
         "en_proceso": "processing",
         "shipped": "shipped",
         "enviado": "shipped",
+        "ready_for_pickup": "ready_for_pickup",
+        "lista_para_retirar": "ready_for_pickup",
+        "lista para retirar": "ready_for_pickup",
         "delivered": "delivered",
         "entregada": "delivered",
         "entregado": "delivered",
@@ -1118,6 +1452,10 @@ def filter_orders_list(orders, start_date=None, end_date=None, status_filter="",
             if search_term in (order.order_number or "").lower()
             or search_term in (order.customer_name or "").lower()
             or search_term in (order.customer_email or "").lower()
+            or search_term in (order.customer_phone or "").lower()
+            or search_term in (getattr(order, "customer_cedula", "") or "").lower()
+            or search_term in (getattr(order, "province", "") or "").lower()
+            or search_term in (getattr(order, "bm_cargo_branch", "") or "").lower()
         ]
 
     return filtered_orders
@@ -1676,6 +2014,7 @@ def admin_overview(current_user):
             "confirmed": 0,
             "processing": 0,
             "shipped": 0,
+            "ready_for_pickup": 0,
             "delivered": 0,
             "cancelled": 0,
         }
@@ -1854,12 +2193,33 @@ def update_order_status(current_user, id):
         previous_status = order.status
         sync_order_inventory(previous_status, normalized_status, order)
         order.status = normalized_status
+        order.order_status = normalized_status
         db.session.commit()
 
         return json_response(200, False, "Estado actualizado.", serialize_order(order))
     except ValueError as error:
         db.session.rollback()
         return json_response(400, True, str(error))
+    except Exception as error:
+        db.session.rollback()
+        return server_error_response()
+
+
+@app.route("/api/admin/orders/<int:id>/payment-status", methods=["PUT"])
+@token_required
+def update_order_payment_status(current_user, id):
+    try:
+        order = Order.query.get_or_404(id)
+        data = get_json_body()
+        payment_status = normalize_payment_status(data.get("payment_status"))
+
+        if not payment_status:
+            return json_response(400, True, "Estado de pago inválido.")
+
+        order.payment_status = payment_status
+        db.session.commit()
+
+        return json_response(200, False, "Estado de pago actualizado.", serialize_order(order))
     except Exception as error:
         db.session.rollback()
         return server_error_response()
@@ -1891,12 +2251,22 @@ def export_orders(current_user):
                 "Fecha",
                 "Estado",
                 "Cliente",
+                "Cédula",
                 "Correo",
                 "Teléfono",
+                "Tipo de envío",
+                "Provincia",
+                "Municipio / sector",
+                "Sucursal BM Cargo",
+                "Nota adicional",
+                "Método de pago",
+                "Estado de pago",
+                "Comprobante",
                 "Dirección",
                 "Subtotal RD$",
                 "Promo 2x1 RD$",
                 "Descuento RD$",
+                "Envío RD$",
                 "Total RD$",
                 "Items",
             ]
@@ -1911,12 +2281,22 @@ def export_orders(current_user):
                     order.date.strftime("%Y-%m-%d %H:%M") if order.date else "",
                     escape_csv_value(order.status),
                     escape_csv_value(order.customer_name),
+                    escape_csv_value(getattr(order, "customer_cedula", "")),
                     escape_csv_value(order.customer_email),
                     escape_csv_value(order.customer_phone),
+                    escape_csv_value(DELIVERY_TYPE_LABELS.get(getattr(order, "delivery_type", ""), "")),
+                    escape_csv_value(getattr(order, "province", "")),
+                    escape_csv_value(getattr(order, "municipality_sector", "")),
+                    escape_csv_value(getattr(order, "bm_cargo_branch", "")),
+                    escape_csv_value(getattr(order, "delivery_note", "")),
+                    escape_csv_value(PAYMENT_METHOD_LABELS.get(getattr(order, "payment_method", ""), "")),
+                    escape_csv_value(PAYMENT_STATUS_LABELS.get(getattr(order, "payment_status", ""), "")),
+                    escape_csv_value(getattr(order, "transfer_receipt_url", "")),
                     escape_csv_value(order.customer_address),
                     f"{float(order.subtotal or order.total or 0):.2f}",
                     f"{float(order.promo_discount_amount or 0):.2f}",
                     f"{float(order.discount_amount or 0):.2f}",
+                    f"{float(getattr(order, 'shipping_cost', 0) or 0):.2f}",
                     f"{float(order.total or 0):.2f}",
                     escape_csv_value(items_summary),
                 ]
@@ -1964,6 +2344,170 @@ def quote_order():
         return server_error_response()
 
 
+@app.route("/api/checkout", methods=["POST"])
+def checkout_order():
+    try:
+        data = get_checkout_body()
+        customer_name = normalize_text(data.get("customer_name"), "Nombre", 150, required=True, min_length=2)
+        customer_cedula = normalize_text(data.get("customer_cedula"), "Cédula", 30, required=True, min_length=5)
+        customer_email = normalize_email(data.get("customer_email"), required=False)
+        customer_phone = normalize_phone(data.get("customer_phone"), required=True)
+        province = normalize_text(data.get("province"), "Provincia", 100, required=True, min_length=2)
+        municipality_sector = normalize_text(
+            data.get("municipality_sector"),
+            "Municipio / sector",
+            150,
+            required=True,
+            min_length=2,
+        )
+        bm_cargo_branch = normalize_text(
+            data.get("bm_cargo_branch"),
+            "Sucursal BM Cargo",
+            150,
+            required=True,
+            min_length=2,
+        )
+        bm_cargo_branch_address = resolve_bm_cargo_branch_address(bm_cargo_branch)
+        if not bm_cargo_branch_address:
+            bm_cargo_branch_address = normalize_text(
+                data.get("bm_cargo_branch_address"),
+                "Dirección de sucursal BM Cargo",
+                300,
+                required=True,
+                min_length=6,
+            )
+        delivery_note = normalize_text(
+            data.get("delivery_note"),
+            "Nota adicional",
+            500,
+            allow_newlines=True,
+        )
+        delivery_type = normalize_delivery_type(data.get("delivery_type"), province)
+        shipping_cost = calculate_shipping_cost(delivery_type, province)
+        payment_method = normalize_payment_method(data.get("payment_method"))
+        receipt_file = request.files.get("transfer_receipt")
+
+        if payment_method == "transfer":
+            validate_transfer_receipt(receipt_file)
+            payment_status = "transfer_sent"
+        else:
+            payment_status = "pending_whatsapp"
+
+        customer_address = normalize_text(
+            data.get("customer_address"),
+            "Dirección",
+            250,
+            allow_newlines=True,
+        )
+        if not customer_address:
+            customer_address = (
+                f"{municipality_sector}, {province}. "
+                f"Retiro BM Cargo: {bm_cargo_branch}. Dirección: {bm_cargo_branch_address}"
+            )
+
+        order_lines = build_order_lines(data.get("items", []))
+        summary = calculate_checkout_summary(order_lines)
+        total = round(float(summary["total"]) + float(shipping_cost), 2)
+
+        order = Order(
+            customer_name=customer_name,
+            customer_cedula=customer_cedula,
+            customer_email=customer_email,
+            customer_phone=customer_phone,
+            customer_address=customer_address,
+            delivery_type=delivery_type,
+            province=province,
+            municipality_sector=municipality_sector,
+            bm_cargo_branch=bm_cargo_branch,
+            bm_cargo_branch_address=bm_cargo_branch_address,
+            delivery_note=delivery_note,
+            payment_method=payment_method,
+            payment_status=payment_status,
+            order_status="pending",
+            status="pending",
+            subtotal=summary["subtotal"],
+            discount_rate=summary["discount_rate"],
+            discount_amount=summary["discount_amount"],
+            promo_discount_amount=summary["promo_discount_amount"],
+            shipping_cost=shipping_cost,
+            total=total,
+        )
+
+        db.session.add(order)
+        db.session.flush()
+        order.order_number = create_order_number(order.id)
+
+        if payment_method == "transfer":
+            order.transfer_receipt_url = save_transfer_receipt(receipt_file, order)
+
+        for line in order_lines:
+            db.session.add(
+                OrderItem(
+                    order_id=order.id,
+                    book_id=line["book"].id,
+                    quantity=line["quantity"],
+                    price=line["price"],
+                    product_name=line["titulo"],
+                    unit_price=line["price"],
+                    total_price=line["line_total"],
+                )
+            )
+            line["book"].stock -= line["quantity"]
+
+        db.session.commit()
+
+        whatsapp_message = build_whatsapp_message(order, order_lines)
+        whatsapp_link = build_whatsapp_link(whatsapp_message)
+        customer_whatsapp_link = build_customer_whatsapp_link(order)
+
+        email_sent = False
+        try:
+            email_sent = send_order_email(order, order_lines)
+        except Exception:
+            email_sent = False
+
+        return json_response(
+            201,
+            False,
+            "Pedido creado.",
+            {
+                "order_number": order.order_number,
+                "subtotal": summary["subtotal"],
+                "discount_rate": summary["discount_rate"],
+                "discount_amount": summary["discount_amount"],
+                "promo_discount_amount": summary["promo_discount_amount"],
+                "promotions": summary["promotions"],
+                "shipping_cost": shipping_cost,
+                "total": total,
+                "payment_method": payment_method,
+                "payment_status": payment_status,
+                "transfer_receipt_url": order.transfer_receipt_url or "",
+                "whatsapp_link": whatsapp_link,
+                "owner_whatsapp_link": whatsapp_link,
+                "customer_whatsapp_link": customer_whatsapp_link,
+                "email_sent": email_sent,
+                "items": [
+                    {
+                        "titulo": line["titulo"],
+                        "quantity": line["quantity"],
+                        "price": line["price"],
+                        "line_total": line["line_total"],
+                    }
+                    for line in order_lines
+                ],
+            },
+        )
+    except LookupError as error:
+        db.session.rollback()
+        return json_response(404, True, str(error))
+    except ValueError as error:
+        db.session.rollback()
+        return json_response(400, True, str(error))
+    except Exception as error:
+        db.session.rollback()
+        return server_error_response()
+
+
 @app.route("/api/orders", methods=["POST"])
 def create_order():
     try:
@@ -1993,7 +2537,9 @@ def create_order():
             discount_rate=summary["discount_rate"],
             discount_amount=summary["discount_amount"],
             promo_discount_amount=summary["promo_discount_amount"],
+            shipping_cost=0,
             total=summary["total"],
+            order_status="pending",
             status="pending",
         )
 
@@ -2008,6 +2554,9 @@ def create_order():
                     book_id=line["book"].id,
                     quantity=line["quantity"],
                     price=line["price"],
+                    product_name=line["titulo"],
+                    unit_price=line["price"],
+                    total_price=line["line_total"],
                 )
             )
             line["book"].stock -= line["quantity"]
