@@ -608,11 +608,15 @@ img {
 }
 
 .sj-hero-scene {
+  position: relative;
   min-height: 27rem;
+  overflow: hidden;
   background: #21170f;
 }
 
 .sj-hero-scene-image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -1130,17 +1134,72 @@ img {
 }
 
 .contact-card {
-  padding: 1rem;
+  position: relative;
+  min-height: 10rem;
+  overflow: hidden;
+  padding: 1.15rem;
+  background:
+    linear-gradient(145deg, rgba(255, 250, 242, 0.98), rgba(255, 255, 255, 0.92)),
+    var(--surface);
+  transform: translateY(0);
+  animation: cardFloatIn 520ms ease both;
+  animation-delay: calc(var(--card-index, 0) * 70ms);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.contact-card::before,
+.info-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.25rem;
+  background: linear-gradient(180deg, var(--green), var(--gold));
+  opacity: 0.9;
+}
+
+.contact-card::after,
+.info-card::after {
+  content: "";
+  position: absolute;
+  right: -2.4rem;
+  bottom: -2.4rem;
+  width: 5.4rem;
+  height: 5.4rem;
+  border-radius: 50%;
+  background: rgba(198, 154, 59, 0.12);
+}
+
+.contact-card:hover,
+.info-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(37, 84, 73, 0.24);
+  box-shadow: var(--shadow-medium);
+}
+
+.contact-card-number,
+.info-card-number {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fffaf2;
+  font-size: 0.76rem;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(37, 84, 73, 0.16);
 }
 
 .contact-card h3 {
+  margin-top: 0.75rem;
   font-family: var(--font-display);
   font-size: 1.08rem;
   letter-spacing: 0;
 }
 
 .contact-card p {
-  margin-top: 0.45rem;
+  margin-top: 0.75rem;
   color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.65;
@@ -1181,16 +1240,24 @@ img {
 }
 
 .info-card {
-  padding: 1rem;
+  position: relative;
+  min-height: 9.5rem;
+  overflow: hidden;
+  padding: 1.15rem;
+  animation: cardFloatIn 520ms ease both;
+  animation-delay: calc(var(--card-index, 0) * 70ms);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .info-card h3 {
+  margin-top: 0.75rem;
   font-family: var(--font-display);
   font-size: 1.14rem;
   letter-spacing: 0;
 }
 
 .info-card p {
+  margin-top: 0.7rem;
   color: var(--muted);
   line-height: 1.7;
 }
@@ -1739,18 +1806,36 @@ img {
   line-height: 1.55;
 }
 
-.bank-box dl {
+.bank-box-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bank-box-header small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.bank-detail-list {
   display: grid;
   gap: 0.45rem;
   margin: 0;
 }
 
-.bank-box dl div {
+.bank-detail-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.45rem;
-  border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+  padding: 0.65rem;
+  border: 1px solid rgba(26, 26, 26, 0.08);
+  border-radius: var(--radius-card);
+  background: rgba(255, 250, 242, 0.72);
 }
 
 .bank-box dt {
@@ -1764,6 +1849,38 @@ img {
   color: var(--ink);
   font-weight: 850;
   text-align: right;
+}
+
+.bank-detail-row dd {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.bank-copy-value {
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+
+.bank-copy-button {
+  min-height: 2.15rem;
+  flex: 0 0 auto;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(37, 84, 73, 0.22);
+  border-radius: var(--radius-control);
+  background: #eef7f1;
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.bank-copy-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
 }
 
 .checkout-error,
@@ -2731,6 +2848,17 @@ img {
   color: #3f6720;
 }
 
+@keyframes cardFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes shimmerPulse {
   0%,
   100% {
@@ -2765,8 +2893,127 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .promo-2x1-alert::before,
   .promo-2x1-burst,
-  .hero-promo-2x1-chip {
+  .hero-promo-2x1-chip,
+  .contact-card,
+  .info-card {
     animation: none;
+  }
+}
+
+@media (min-width: 1051px) and (max-height: 900px) {
+  .topbar {
+    margin-bottom: 0.75rem;
+    padding: 0.62rem 0.85rem;
+  }
+
+  .brand-seal {
+    width: 2.9rem;
+    height: 2.9rem;
+  }
+
+  .brand-wordmark {
+    font-size: 1.5rem;
+  }
+
+  .sj-hero-shell {
+    margin-bottom: 1.25rem;
+  }
+
+  .sj-hero-stage {
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  }
+
+  .sj-hero-panel,
+  .sj-hero-scene {
+    min-height: 24rem;
+  }
+
+  .sj-hero-panel {
+    padding: 1.25rem 1.65rem;
+  }
+
+  .sj-hero-panel-inner {
+    width: min(23rem, 100%);
+  }
+
+  .sj-hero-book-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .sj-hero-overline {
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+  }
+
+  .sj-hero-overline span {
+    width: 2rem;
+  }
+
+  .sj-hero-overline p {
+    font-size: 0.95rem;
+  }
+
+  .sj-hero-monogram {
+    margin-top: 0.3rem;
+  }
+
+  .sj-hero-monogram-copy {
+    font-size: 4.7rem;
+  }
+
+  .sj-hero-leaf {
+    width: 1.8rem;
+    height: 1.8rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .sj-hero-divider {
+    width: min(13.5rem, 100%);
+    margin: 0.4rem auto 0.6rem;
+  }
+
+  .sj-hero-title {
+    font-size: 1.95rem;
+    line-height: 1.05;
+  }
+
+  .sj-hero-support {
+    margin-top: 0.7rem;
+    font-size: 0.92rem;
+  }
+
+  .sj-hero-actions {
+    margin-top: 0.9rem;
+  }
+
+  .sj-hero-button {
+    min-height: 2.55rem;
+    padding: 0.62rem 0.85rem;
+    font-size: 0.84rem;
+  }
+
+  .hero-promo-2x1-chip {
+    min-width: 6.25rem;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .hero-promo-2x1-chip span {
+    font-size: 1.45rem;
+  }
+
+  .hero-promo-2x1-chip strong,
+  .hero-promo-2x1-chip small {
+    font-size: 0.65rem;
+  }
+
+  .sj-benefit-card {
+    min-height: 4.45rem;
+    padding: 0.78rem 1rem;
+  }
+
+  .promo-2x1-alert {
+    margin-top: 0.95rem;
   }
 }
 
@@ -3162,6 +3409,18 @@ img {
   .checkout-guide,
   .checkout-section {
     padding: 0.9rem;
+  }
+
+  .bank-box-header,
+  .bank-detail-row,
+  .bank-detail-row dd {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .bank-copy-button {
+    width: 100%;
   }
 
   .checkout-progress-list {

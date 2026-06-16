@@ -35,27 +35,55 @@ const PAGE_META = {
   },
 };
 
+function normalizeCardTitle(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function getSectionItemTitle(item) {
+  if (!item || typeof item !== "object") {
+    return "";
+  }
+
+  const title = item.title || "";
+  return normalizeCardTitle(title) === "libreria sj" ? "" : title;
+}
+
+function getSectionItemBody(item) {
+  if (!item) {
+    return "";
+  }
+
+  return typeof item === "object" ? item.body || "" : item;
+}
+
 function renderSectionItems(items) {
   if (!items?.length) {
     return null;
   }
 
-  const isObjectList = typeof items[0] === "object";
-
   return (
     <div className="info-items">
-      {items.map((item, index) =>
-        isObjectList ? (
-          <article key={`${item.title}-${index}`} className="info-card">
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
+      {items.map((item, index) => {
+        const title = getSectionItemTitle(item);
+        const body = getSectionItemBody(item);
+
+        return (
+          <article
+            key={`${title || body}-${index}`}
+            className="info-card"
+            style={{ "--card-index": index }}
+          >
+            <span className="info-card-number">{String(index + 1).padStart(2, "0")}</span>
+            {title ? <h3>{title}</h3> : null}
+            <p>{body}</p>
           </article>
-        ) : (
-          <article key={`${item}-${index}`} className="info-card">
-            <p>{item}</p>
-          </article>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }

@@ -18,6 +18,29 @@ const SHIPPING_COSTS = {
 
 const MAX_RECEIPT_SIZE = 5 * 1024 * 1024;
 const RECEIPT_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
+const BANK_TRANSFER_ACCOUNTS = [
+  {
+    key: "banreservas",
+    label: "Banreservas",
+    subtitle: "Cuenta de ahorros",
+    details: [
+      { key: "company", label: "Empresa", value: "Suarez Jimenez Technology", copyable: false },
+      { key: "rnc", label: "RNC", value: "132117842", copyable: true },
+      { key: "account_type", label: "Tipo", value: "Cuenta de Ahorros", copyable: false },
+      { key: "account_number", label: "Numero de cuenta", value: "9603050422", copyable: true },
+    ],
+  },
+  {
+    key: "popular",
+    label: "Banco Popular",
+    subtitle: "Cuenta corriente",
+    details: [
+      { key: "holder", label: "Titular", value: "Patricia Jimenez de Suarez", copyable: false },
+      { key: "account_type", label: "Tipo", value: "Cuenta Corriente", copyable: false },
+      { key: "account_number", label: "Numero de cuenta", value: "853965572", copyable: true },
+    ],
+  },
+];
 
 const INITIAL_CUSTOMER_DATA = {
   delivery_type: "",
@@ -30,6 +53,7 @@ const INITIAL_CUSTOMER_DATA = {
   bm_cargo_branch: "",
   delivery_note: "",
   payment_method: "",
+  transfer_bank: "",
 };
 
 function formatCurrency(value) {
@@ -67,6 +91,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
   const [orderConfirmation, setOrderConfirmation] = useState(null);
   const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
   const [checkoutSummary, setCheckoutSummary] = useState(() => calculateCartSummary(cartItems));
+  const [copiedBankKey, setCopiedBankKey] = useState("");
 
   usePageMeta({
     title: "Carrito",
@@ -95,6 +120,7 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
   const hasDirectBranches = directBranches.length > 0;
   const branchOptions = hasDirectBranches ? directBranches : allBmCargoBranches;
   const selectedBranchAddress = getBmCargoBranchAddress(customerData.bm_cargo_branch);
+  const selectedTransferBank = BANK_TRANSFER_ACCOUNTS.find((bank) => bank.key === customerData.transfer_bank) || null;
   const cartStepReady = cartItems.length > 0;
   const deliveryStepReady = Boolean(
     customerData.delivery_type &&
@@ -106,7 +132,8 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       customerData.bm_cargo_branch.trim(),
   );
   const paymentStepReady = Boolean(
-    customerData.payment_method && (customerData.payment_method !== "transfer" || receiptFile),
+    customerData.payment_method &&
+      (customerData.payment_method !== "transfer" || (customerData.transfer_bank && receiptFile)),
   );
   const checkoutProgress = [
     { label: "Pedido", done: cartStepReady },
@@ -126,9 +153,10 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       "payment_method",
     ];
     const hasRequiredFields = requiredFields.every((field) => String(customerData[field] || "").trim());
+    const hasTransferBank = customerData.payment_method !== "transfer" || customerData.transfer_bank;
     const hasReceipt = customerData.payment_method !== "transfer" || receiptFile;
 
-    return cartItems.length > 0 && hasRequiredFields && hasReceipt && !submitting;
+    return cartItems.length > 0 && hasRequiredFields && hasTransferBank && hasReceipt && !submitting;
   }, [cartItems.length, customerData, receiptFile, submitting]);
 
   useEffect(() => {
@@ -175,18 +203,22 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       if (field === "province") {
         nextValue.bm_cargo_branch = "";
       }
+      if (field === "payment_method" && value !== "transfer") {
+        nextValue.transfer_bank = "";
+      }
 
       return nextValue;
     });
 
     if (field === "payment_method" && value !== "transfer") {
       setReceiptFile(null);
+      setCopiedBankKey("");
     }
 
     setFieldErrors((currentErrors) => ({
       ...currentErrors,
       [field]: "",
-      ...(field === "payment_method" ? { transfer_receipt: "" } : {}),
+      ...(field === "payment_method" ? { transfer_bank: "", transfer_receipt: "" } : {}),
       ...(field === "delivery_type" ? { province: "", bm_cargo_branch: "" } : {}),
       ...(field === "province" ? { bm_cargo_branch: "" } : {}),
     }));
@@ -221,6 +253,29 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
     setReceiptFile(file);
   }
 
+  async function handleCopyBankDetail(value, key) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = value;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      setCopiedBankKey(key);
+      window.setTimeout(() => setCopiedBankKey(""), 1800);
+    } catch {
+      setError("No se pudo copiar. Mantén presionado el dato para seleccionarlo manualmente.");
+    }
+  }
+
   function validateForm() {
     const errors = {};
 
@@ -237,6 +292,9 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
       errors.bm_cargo_branch = "Selecciona una sucursal BM Cargo.";
     }
     if (!customerData.payment_method) errors.payment_method = "Selecciona un método de pago.";
+    if (customerData.payment_method === "transfer" && !customerData.transfer_bank) {
+      errors.transfer_bank = "Selecciona el banco donde harás la transferencia.";
+    }
     if (customerData.payment_method === "transfer" && !receiptFile) {
       errors.transfer_receipt = "Debes cargar el comprobante de transferencia.";
     }
@@ -654,29 +712,60 @@ function Cart({ cartItems, onBack, onNavigate, onUpdateQuantity, onRemoveItem, o
 
                   {customerData.payment_method === "transfer" ? (
                     <div className="bank-box">
-                      <p>Datos bancarios</p>
-                      <dl>
+                      <div className="bank-box-header">
                         <div>
-                          <dt>Banco</dt>
-                          <dd>[NOMBRE DEL BANCO]</dd>
+                          <p>Elige el banco para transferir</p>
+                          <small>Selecciona Banreservas o Popular y copia solo los datos necesarios.</small>
                         </div>
-                        <div>
-                          <dt>Titular</dt>
-                          <dd>[NOMBRE DEL TITULAR]</dd>
-                        </div>
-                        <div>
-                          <dt>Tipo de cuenta</dt>
-                          <dd>[AHORRO / CORRIENTE]</dd>
-                        </div>
-                        <div>
-                          <dt>Número de cuenta</dt>
-                          <dd>[NÚMERO DE CUENTA]</dd>
-                        </div>
-                        <div>
-                          <dt>Moneda</dt>
-                          <dd>DOP</dd>
-                        </div>
-                      </dl>
+                      </div>
+
+                      <div className="checkout-choice-grid bank-choice-grid">
+                        {BANK_TRANSFER_ACCOUNTS.map((bank) => (
+                          <button
+                            type="button"
+                            key={bank.key}
+                            className={`checkout-choice bank-choice ${
+                              customerData.transfer_bank === bank.key ? "is-selected" : ""
+                            }`}
+                            onClick={() => updateCustomerField("transfer_bank", bank.key)}
+                          >
+                            <strong>{bank.label}</strong>
+                            <span>{bank.subtitle}</span>
+                          </button>
+                        ))}
+                      </div>
+                      {fieldErrors.transfer_bank ? <p className="field-error">{fieldErrors.transfer_bank}</p> : null}
+
+                      {selectedTransferBank ? (
+                        <dl className="bank-detail-list">
+                          {selectedTransferBank.details.map((detail) => {
+                            const copiedKey = `${selectedTransferBank.key}-${detail.key}`;
+
+                            return (
+                              <div
+                                key={detail.key}
+                                className={`bank-detail-row ${detail.copyable ? "is-copyable" : ""}`}
+                              >
+                                <dt>{detail.label}</dt>
+                                <dd>
+                                  <span className="bank-copy-value">{detail.value}</span>
+                                  {detail.copyable ? (
+                                    <button
+                                      type="button"
+                                      className="bank-copy-button"
+                                      onClick={() => handleCopyBankDetail(detail.value, copiedKey)}
+                                    >
+                                      {copiedBankKey === copiedKey ? "Copiado" : "Copiar"}
+                                    </button>
+                                  ) : null}
+                                </dd>
+                              </div>
+                            );
+                          })}
+                        </dl>
+                      ) : (
+                        <p className="bank-empty-hint">Selecciona un banco para ver los datos de transferencia.</p>
+                      )}
 
                       <label className="checkout-field">
                         <span>Comprobante de transferencia</span>

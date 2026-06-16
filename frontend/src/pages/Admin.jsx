@@ -59,15 +59,12 @@ const EMPTY_BOOK_FORM = {
 };
 
 const SITE_SECTION_OPTIONS = [
-  { key: "hero", label: "Hero principal" },
-  { key: "banner_primary", label: "Banner principal" },
-  { key: "banner_secondary", label: "Banner secundario" },
   { key: "about", label: "Nosotros" },
   { key: "faq", label: "Preguntas frecuentes" },
   { key: "policies", label: "Políticas" },
   { key: "shipping", label: "Envíos" },
-  { key: "contact", label: "Contacto" },
 ];
+const SITE_SECTION_KEYS = new Set(SITE_SECTION_OPTIONS.map((section) => section.key));
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("es-DO", {
@@ -171,7 +168,7 @@ function Admin({ onBack }) {
   const [bookForm, setBookForm] = useState(EMPTY_BOOK_FORM);
   const [editingBookId, setEditingBookId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
-  const [selectedSectionKey, setSelectedSectionKey] = useState("hero");
+  const [selectedSectionKey, setSelectedSectionKey] = useState("about");
   const [sectionForm, setSectionForm] = useState({
     title: "",
     subtitle: "",
@@ -201,6 +198,17 @@ function Admin({ onBack }) {
   const selectedSection = useMemo(
     () => siteSections.find((section) => section.key === selectedSectionKey) || null,
     [siteSections, selectedSectionKey],
+  );
+  const editableSiteSections = useMemo(
+    () =>
+      siteSections
+        .filter((section) => SITE_SECTION_KEYS.has(section.key))
+        .sort(
+          (firstSection, secondSection) =>
+            SITE_SECTION_OPTIONS.findIndex((option) => option.key === firstSection.key) -
+            SITE_SECTION_OPTIONS.findIndex((option) => option.key === secondSection.key),
+        ),
+    [siteSections],
   );
 
   const inventoryHighlights = useMemo(() => {
@@ -1523,8 +1531,8 @@ function handleLogout() {
             <div className="admin-panel-card admin-content-editor">
               <div className="admin-section-heading">
                 <div>
-                  <p className="section-label">Banners y páginas</p>
-                  <h2>Gestión de secciones visibles</h2>
+                  <p className="section-label">Páginas visibles</p>
+                  <h2>Contenido que se muestra en la web</h2>
                 </div>
               </div>
 
@@ -1582,15 +1590,6 @@ function handleLogout() {
                   />
                 </label>
                 <label className="checkout-field admin-textarea-field">
-                  <span>Imagen o fondo</span>
-                  <input
-                    type="url"
-                    value={sectionForm.image_url}
-                    onChange={(event) => setSectionForm((currentValue) => ({ ...currentValue, image_url: event.target.value }))}
-                    placeholder="https://..."
-                  />
-                </label>
-                <label className="checkout-field admin-textarea-field">
                   <span>Items extra</span>
                   <textarea
                     rows="5"
@@ -1620,11 +1619,11 @@ function handleLogout() {
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">Resumen</p>
-                  <h2>Secciones configuradas</h2>
+                  <h2>Secciones usadas por la web</h2>
                 </div>
               </div>
               <div className="admin-category-list">
-                {siteSections.map((section) => (
+                {editableSiteSections.length ? editableSiteSections.map((section) => (
                   <article key={section.key} className="admin-category-card">
                     <div className="admin-section-summary-copy">
                       <strong>{SITE_SECTION_OPTIONS.find((item) => item.key === section.key)?.label || section.key}</strong>
@@ -1632,7 +1631,9 @@ function handleLogout() {
                     </div>
                     <span>{section.is_active ? "Activa" : "Oculta"}</span>
                   </article>
-                ))}
+                )) : (
+                  <p className="status-box">Aun no hay secciones visibles configuradas.</p>
+                )}
               </div>
             </div>
           </section>

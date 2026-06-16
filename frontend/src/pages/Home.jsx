@@ -33,6 +33,28 @@ const FALLBACK_CATEGORIES = [
 const UPCOMING_COMBOS = [
   { label: "Lecturas 2x1", slug: "lecturas-2x1" },
 ];
+const HOME_ABOUT_ITEMS_LIMIT = 6;
+
+function isGenericCardTitle(value = "") {
+  return normalizeText(value).trim() === "libreria sj";
+}
+
+function getCardTitle(item) {
+  if (!item || typeof item !== "object") {
+    return "";
+  }
+
+  const title = item.title || "";
+  return title && !isGenericCardTitle(title) ? title : "";
+}
+
+function getCardBody(item) {
+  if (!item) {
+    return "";
+  }
+
+  return typeof item === "object" ? item.body || "" : item;
+}
 
 function normalizeText(value) {
   return value
@@ -335,6 +357,7 @@ function Home({
   );
 
   const aboutItems = aboutSection.items || [];
+  const homeAboutItems = aboutItems.slice(0, HOME_ABOUT_ITEMS_LIMIT);
   const activeFiltersCount =
     Number(showOffersOnly) + Number(selectedCategory !== "todos") + Number(Boolean(selectedCombo));
   const booksById = useMemo(
@@ -656,13 +679,23 @@ function Home({
         </div>
 
         <div className="contact-grid">
-          {aboutItems.length
-            ? aboutItems.map((item, index) => (
-                <article key={`${item.title || item}-${index}`} className="contact-card">
-                  <h3>{item.title || "Librería SJ"}</h3>
-                  <p>{item.body || item}</p>
-                </article>
-              ))
+          {homeAboutItems.length
+            ? homeAboutItems.map((item, index) => {
+                const title = getCardTitle(item);
+                const body = getCardBody(item);
+
+                return (
+                  <article
+                    key={`${title || body}-${index}`}
+                    className="contact-card"
+                    style={{ "--card-index": index }}
+                  >
+                    <span className="contact-card-number">{String(index + 1).padStart(2, "0")}</span>
+                    {title ? <h3>{title}</h3> : null}
+                    <p>{body}</p>
+                  </article>
+                );
+              })
             : null}
         </div>
       </section>
