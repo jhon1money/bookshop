@@ -1,13 +1,17 @@
-function BookCard({ book, onAddToCart, onOpenDetails }) {
+function BookCard({ book, onAddToCart, onOpenDetails, animationIndex = 0 }) {
   const imageSrc = book.imagen || "https://placehold.co/400x560/e6dccd/5e4632?text=Book";
   const displayPrice = Number(book.precio).toFixed(2);
   const offerPrice =
     book.oferta && book.precio_oferta
       ? Number(book.precio_oferta).toFixed(2)
       : null;
+  const cardMotionIndex = Math.min(Number(animationIndex) || 0, 12);
 
   return (
-    <article className={`book-card ${book.promo_2x1 ? "has-promo-2x1" : ""}`}>
+    <article
+      className={`book-card ${book.promo_2x1 ? "has-promo-2x1" : ""}`}
+      style={{ "--book-index": cardMotionIndex }}
+    >
       <div className="book-badge-row">
         {book.oferta ? <span className="book-badge">Oferta</span> : null}
         {book.destacado ? <span className="book-flag-chip">Destacado</span> : null}

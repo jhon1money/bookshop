@@ -25,6 +25,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -54,6 +55,78 @@ img {
   min-height: 100vh;
 }
 
+.startup-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(198, 154, 59, 0.16), transparent 28rem),
+    var(--paper);
+  color: var(--ink);
+}
+
+.startup-loader-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  text-align: center;
+  animation: loaderCardIn 360ms ease both;
+}
+
+.startup-loader-book {
+  width: 5rem;
+  height: 5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid rgba(255, 250, 242, 0.18);
+  border-radius: var(--radius-card);
+  background: var(--ink);
+  box-shadow: var(--shadow-medium);
+  animation: loaderFloat 1.25s ease-in-out infinite;
+}
+
+.startup-loader-book img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center bottom;
+  animation: loaderBookFlip 1.25s ease-in-out infinite;
+}
+
+.startup-loader-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.startup-loader-dots {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.startup-loader-dots i {
+  width: 0.45rem;
+  height: 0.45rem;
+  display: block;
+  border-radius: 999px;
+  background: var(--gold);
+  animation: loaderDot 820ms ease-in-out infinite;
+}
+
+.startup-loader-dots i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.startup-loader-dots i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
 .page-shell {
   min-height: 100vh;
   min-height: 100svh;
@@ -62,6 +135,7 @@ img {
   overflow-x: hidden;
   padding: 1rem 0 0;
   background: var(--paper);
+  animation: pageSoftIn 420ms ease both;
 }
 
 .container {
@@ -294,6 +368,7 @@ img {
   letter-spacing: 0;
   text-transform: uppercase;
   cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
 .nav-link:hover,
@@ -308,6 +383,24 @@ img {
 .sj-benefit-icon svg {
   width: 1rem;
   height: 1rem;
+}
+
+.mobile-nav-cart-link {
+  display: none;
+}
+
+.mobile-nav-cart-count {
+  min-width: 1.55rem;
+  min-height: 1.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .topnav-utilities {
@@ -329,6 +422,7 @@ img {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
 .utility-link:hover {
@@ -2877,6 +2971,60 @@ img {
   color: #3f6720;
 }
 
+@keyframes pageSoftIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loaderCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loaderFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes loaderBookFlip {
+  0%,
+  100% {
+    transform: rotateY(0deg) rotate(-2deg);
+  }
+  50% {
+    transform: rotateY(18deg) rotate(3deg);
+  }
+}
+
+@keyframes loaderDot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-0.22rem);
+    opacity: 1;
+  }
+}
+
 @keyframes cardFloatIn {
   from {
     opacity: 0;
@@ -2920,11 +3068,20 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .promo-2x1-alert::before,
   .promo-2x1-burst,
   .hero-promo-2x1-chip,
   .contact-card,
-  .info-card {
+  .info-card,
+  .page-shell,
+  .startup-loader-card,
+  .startup-loader-book,
+  .startup-loader-book img,
+  .startup-loader-dots i {
     animation: none;
   }
 }
@@ -3058,14 +3215,23 @@ img {
   .topnav {
     position: absolute;
     top: calc(100% + 0.5rem);
-    left: 0;
-    right: 0;
-    display: none;
-    padding: 0 0.5rem;
+    right: 0.5rem;
+    left: auto;
+    z-index: 85;
+    width: min(22rem, calc(100vw - 1rem));
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-0.45rem);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
   }
 
   .topnav.open {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
   }
 
   .topnav-links {
@@ -3233,6 +3399,13 @@ img {
 
   .topnav {
     flex: 0 0 auto;
+    top: calc(100% + 0.4rem);
+    right: 0.55rem;
+    width: min(18.5rem, calc(100vw - 1.1rem));
+  }
+
+  .topnav-links {
+    padding: 0.42rem 0.72rem;
   }
 
   .menu-toggle {
@@ -3276,6 +3449,11 @@ img {
 
   .topnav-utilities {
     display: none;
+  }
+
+  .mobile-nav-cart-link {
+    display: flex;
+    color: var(--green);
   }
 
   .utility-link,

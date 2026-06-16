@@ -570,10 +570,11 @@ function Home({
 
         {!loading && !error && visibleBooks.length > 0 ? (
           <div className="books-grid">
-            {visibleBooks.map((book) => (
+            {visibleBooks.map((book, index) => (
               <BookCard
                 key={book.id}
                 book={book}
+                animationIndex={index}
                 onAddToCart={handleAddToCart}
                 onOpenDetails={setSelectedBook}
               />

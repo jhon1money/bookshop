@@ -18,18 +18,6 @@ function Icon({ name }) {
         <path d="M15.6 15.6L20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
       </>
     ),
-    user: (
-      <>
-        <circle cx="12" cy="8.2" r="3.1" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <path
-          d="M5.5 19.2C6.9 16.3 9.1 14.9 12 14.9C14.9 14.9 17.1 16.3 18.5 19.2"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeWidth="1.8"
-        />
-      </>
-    ),
     cart: (
       <>
         <path
@@ -133,6 +121,17 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset, activeView = 
           >
             Nosotros
           </button>
+          <button
+            type="button"
+            className="nav-link mobile-nav-cart-link"
+            onClick={() => {
+              onOpenCart();
+              closeMenu();
+            }}
+          >
+            Carrito
+            <span className="mobile-nav-cart-count">{totalItems}</span>
+          </button>
         </div>
       </nav>
 
@@ -144,14 +143,6 @@ function Navbar({ cartItems, onOpenCart, onNavigate, onBrandReset, activeView = 
           onClick={() => navigateToSection("catalogo")}
         >
           <Icon name="search" />
-        </button>
-        <button
-          type="button"
-          className="utility-link"
-          aria-label="Conocer la librería"
-          onClick={() => handleNavigate("nosotros")}
-        >
-          <Icon name="user" />
         </button>
         <button
           type="button"

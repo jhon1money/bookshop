@@ -37,10 +37,19 @@ function App() {
     }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showStartupLoader, setShowStartupLoader] = useState(true);
 
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
+
+  useEffect(() => {
+    const loaderTimer = window.setTimeout(() => {
+      setShowStartupLoader(false);
+    }, 850);
+
+    return () => window.clearTimeout(loaderTimer);
+  }, []);
 
   useEffect(() => {
     function handlePopState() {
@@ -160,8 +169,31 @@ function App() {
     );
   }
 
+  function renderWithStartupLoader(page) {
+    return (
+      <>
+        {page}
+        {showStartupLoader ? (
+          <div className="startup-loader" role="status" aria-live="polite" aria-label="Cargando Librería SJ">
+            <div className="startup-loader-card">
+              <span className="startup-loader-book" aria-hidden="true">
+                <img src="/reference/book-icon.png" alt="" />
+              </span>
+              <span className="startup-loader-title">Cargando Librería SJ</span>
+              <span className="startup-loader-dots" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+            </div>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
   if (currentView === "cart") {
-    return renderPublicPage(
+    return renderWithStartupLoader(renderPublicPage(
       <Cart
         cartItems={cartItems}
         onBack={() => handleNavigate("home")}
@@ -171,26 +203,26 @@ function App() {
         onClearCart={clearCart}
         onOrderPlaced={handleOrderPlaced}
       />,
-    );
+    ));
   }
 
   if (currentView === "admin") {
-    return <Admin onBack={() => handleNavigate("home")} />;
+    return renderWithStartupLoader(<Admin onBack={() => handleNavigate("home")} />);
   }
 
   if (currentView === "blog") {
-    return renderPublicPage(
+    return renderWithStartupLoader(renderPublicPage(
       <Blog
         cartItems={cartItems}
         onOpenCart={() => setIsCartOpen(true)}
         onNavigate={handleNavigate}
         onBrandReset={handleHomeReset}
       />,
-    );
+    ));
   }
 
   if (["nosotros", "preguntas", "politicas", "envios", "contacto"].includes(currentView)) {
-    return renderPublicPage(
+    return renderWithStartupLoader(renderPublicPage(
       <InfoPage
         slug={currentView}
         cartItems={cartItems}
@@ -199,10 +231,10 @@ function App() {
         onBrandReset={handleHomeReset}
         activeView={currentView}
       />,
-    );
+    ));
   }
 
-  return renderPublicPage(
+  return renderWithStartupLoader(renderPublicPage(
     <Home
       key={homeSession}
       cartItems={cartItems}
@@ -216,7 +248,7 @@ function App() {
       onUpdateQuantity={updateCartItemQuantity}
       onRemoveItem={removeFromCart}
     />,
-  );
+  ));
 }
 
 export default App;
