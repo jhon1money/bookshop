@@ -523,8 +523,8 @@ SITE_SECTION_DEFAULTS = {
         "items_json": json.dumps(
             [
                 {"title": "WhatsApp", "body": "829-447-5730"},
-                {"title": "Correo", "body": "Cristofer25suarez@gmail.com"},
-                {"title": "Horario", "body": "Lunes a sábado de 9:00am a 9:00pm"},
+                {"title": "Correo", "body": "librerisj@gmail.com"},
+                {"title": "Horario", "body": "Lunes a sábado de 9:00am a 10:00pm"},
             ],
             ensure_ascii=True,
         ),

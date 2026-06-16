@@ -1827,6 +1827,26 @@ img {
   margin: 0;
 }
 
+.bank-choice-grid {
+  gap: 0.6rem;
+}
+
+.bank-choice {
+  min-height: 4.35rem;
+  background: #fffaf2;
+}
+
+.bank-empty-hint {
+  margin: 0;
+  padding: 0.7rem 0.75rem;
+  border: 1px dashed rgba(37, 84, 73, 0.24);
+  border-radius: var(--radius-card);
+  background: rgba(255, 250, 242, 0.66);
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
 .bank-detail-row {
   display: flex;
   align-items: center;
@@ -1836,6 +1856,11 @@ img {
   border: 1px solid rgba(26, 26, 26, 0.08);
   border-radius: var(--radius-card);
   background: rgba(255, 250, 242, 0.72);
+}
+
+.bank-detail-row.is-copyable {
+  border-color: rgba(37, 84, 73, 0.18);
+  background: #f4fbf6;
 }
 
 .bank-box dt {
@@ -1862,6 +1887,10 @@ img {
 .bank-copy-value {
   user-select: all;
   overflow-wrap: anywhere;
+}
+
+.bank-detail-row:not(.is-copyable) .bank-copy-value {
+  color: var(--muted);
 }
 
 .bank-copy-button {
