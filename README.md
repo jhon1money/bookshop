@@ -144,7 +144,7 @@ El administrador puede gestionar libros, categorías, inventario, órdenes, cont
 
 ## 🏗 Arquitectura general
 
-```mermaid
+
 flowchart TD
     A[Usuario / Cliente] --> B[Frontend React + Vite]
     B --> C[API Flask]
@@ -158,6 +158,21 @@ flowchart TD
 
     B --> I[Vercel]
     C --> J[Render]
+
+---
+
+<div align="center">
+
+### 🚀 Desarrollado por Quisqueya Tech Labs
+
+<img src="./frontend/public/reference/quisqueya-tech-labs-badge.gif" width="260" alt="Quisqueya Tech Labs Badge" />
+
+<br/>
+
+**Tecnología creada con visión, disciplina y propósito desde República Dominicana.**
+
+</div>
+```
 
 
 
