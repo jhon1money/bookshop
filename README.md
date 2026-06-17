@@ -78,6 +78,46 @@ El administrador puede gestionar libros, categorías, inventario, órdenes, cont
 
 ---
 
+## 🧰 Tecnologías utilizadas
+
+### Frontend
+
+| Tecnología | Uso |
+|---|---|
+| React | Construcción de la interfaz |
+| Vite | Entorno rápido de desarrollo |
+| JavaScript | Lógica del frontend |
+| CSS | Estilos personalizados |
+| Axios | Comunicación con la API |
+| LocalStorage | Persistencia temporal del carrito |
+
+---
+
+### Backend
+
+| Tecnología | Uso |
+|---|---|
+| Python | Lenguaje principal |
+| Flask | API REST |
+| SQLAlchemy | ORM para base de datos |
+| JWT | Autenticación del administrador |
+| PostgreSQL | Base de datos en producción |
+| SQLite | Base de datos local |
+| Gunicorn | Servidor WSGI en producción |
+| SMTP | Envío de correos |
+
+---
+
+### Deploy
+
+| Plataforma | Uso |
+|---|---|
+| Vercel | Deploy del frontend |
+| Render | Deploy del backend |
+| PostgreSQL Render | Base de datos en producción |
+
+---
+
 ## ✨ Características principales
 
 <table>
