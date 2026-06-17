@@ -165,7 +165,7 @@ flowchart TD
 
 ### 🚀 Desarrollado por Quisqueya Tech Labs
 
-<img width="680" height="480" alt="quisqueya_tech_labs" src="https://github.com/user-attachments/assets/5395f5f4-7ad1-45f5-a37c-6c6f99e7ecdc" />
+<img width="500" height="400" alt="quisqueya_tech_labs" src="https://github.com/user-attachments/assets/5395f5f4-7ad1-45f5-a37c-6c6f99e7ecdc" />
 
 <br/>
 
