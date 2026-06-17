@@ -64,19 +64,6 @@ El administrador puede gestionar libros, categorías, inventario, órdenes, cont
 
 ---
 
-## 🎬 Vista animada / preview 3D
-
-> Coloca un GIF o WebP animado del proyecto en esta ruta:
->
-> `frontend/public/reference/libreria-sj-3d-preview.gif`
-
-<div align="center">
-
-<img src="./frontend/public/reference/libreria-sj-3d-preview.gif" width="900" alt="Demo 3D animada de Librería SJ" />
-
-</div>
-
----
 
 ## 🧰 Tecnologías utilizadas
 
