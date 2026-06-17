@@ -487,11 +487,22 @@ function Home({
           </div>
 
           <div className="sj-hero-scene">
-            <img
-              src="/reference/libreria-sj-hero-scene.png"
-              alt="Pila de libros físicos frente a una biblioteca"
-              className="sj-hero-scene-image"
-            />
+            <picture className="sj-hero-scene-picture">
+              <source
+                srcSet="/reference/libreria-sj-hero-shelves-mobile.webp"
+                media="(max-width: 720px)"
+                type="image/webp"
+              />
+              <img
+                src="/reference/libreria-sj-hero-shelves.webp"
+                alt="Estantes llenos de libros en una librería"
+                className="sj-hero-scene-image"
+                width="1440"
+                height="960"
+                decoding="async"
+                fetchPriority="high"
+              />
+            </picture>
           </div>
 
           {promo2x1Books.length ? (

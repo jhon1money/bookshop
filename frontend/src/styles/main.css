@@ -708,6 +708,12 @@ img {
   background: #21170f;
 }
 
+.sj-hero-scene-picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
 .sj-hero-scene-image {
   position: absolute;
   inset: 0;

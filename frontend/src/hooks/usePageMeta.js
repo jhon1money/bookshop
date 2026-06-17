@@ -3,7 +3,7 @@ import { useEffect } from "react";
 const SITE_URL = "https://libreriajs.com";
 const DEFAULT_DESCRIPTION = "Compra libros físicos con entregas, seguimiento claro y atención por WhatsApp.";
 const DEFAULT_KEYWORDS = "librería, libros físicos, comprar libros RD, novelas, desarrollo personal, Librería SJ";
-const DEFAULT_IMAGE = `${SITE_URL}/reference/libreria-sj-hero-scene.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/reference/libreria-sj-hero-shelves.webp`;
 
 function ensureMetaTag(selector, attributes = {}) {
   let element = document.head.querySelector(selector);
