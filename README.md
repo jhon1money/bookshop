@@ -11,12 +11,13 @@
 
 ### Plataforma full stack para venta de libros físicos en República Dominicana
 
-<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=2800&pause=700&color=FACC15&center=true&vCenter=true&width=900&lines=Catálogo+de+libros+físicos;Carrito+de+compras+dinámico;Panel+administrativo+privado;Checkout+con+WhatsApp+y+correo;Frontend+React+%2B+Backend+Flask" alt="Typing SVG" />
+<!-- <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=2800&pause=700&color=FACC15&center=true&vCenter=true&width=900&lines=Catálogo+de+libros+físicos;Carrito+de+compras+dinámico;Panel+administrativo+privado;Checkout+con+WhatsApp+y+correo;Frontend+React+%2B+Backend+Flask" alt="Typing SVG" /> -->
 
 <br/>
 
 <a href="https://libreriasj.com">
-  <img src="https://img.shields.io/badge/Visitar%20sitio-libreriasj.com-facc15?style=for-the-badge&logo=googlechrome&logoColor=black" />
+  <img width="1887" height="872" alt="image" src="https://github.com/user-attachments/assets/4254d468-8041-4bd7-b877-4fb0055fa1ac" />
+
 </a>
 
 </div>
@@ -143,8 +144,8 @@ El administrador puede gestionar libros, categorías, inventario, órdenes, cont
 ---
 
 ## 🏗 Arquitectura general
-
 ```mermaid
+
 flowchart TD
     A[Usuario / Cliente] --> B[Frontend React + Vite]
     B --> C[API Flask]
@@ -158,3 +159,22 @@ flowchart TD
 
     B --> I[Vercel]
     C --> J[Render]
+```
+---
+
+<div align="center">
+
+### 🚀 Desarrollado por Quisqueya Tech Labs
+
+<img width="600" height="350" alt="quisqueya_tech_labs" src="https://github.com/user-attachments/assets/5395f5f4-7ad1-45f5-a37c-6c6f99e7ecdc" />
+
+<br/>
+
+**Tecnología creada con visión, disciplina y propósito desde República Dominicana.**
+<br/>
+<img width="120" height="80" alt="ProudToBeDominicanDominicanIndependenceGIF" src="https://github.com/user-attachments/assets/f5eb3f3b-13b9-4bda-92fe-c8d15d33b221" />
+</div>
+
+
+
+
