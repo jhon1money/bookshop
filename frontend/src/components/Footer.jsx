@@ -1,6 +1,7 @@
 const WHATSAPP_NUMBER = "18294475730";
 const STORE_EMAIL = "Cristofer25suarez@gmail.com";
 const WHATSAPP_MESSAGE = "Hola, estoy interesado en comprar libros";
+const CREATOR_URL = "https://jhonmon.pythonanywhere.com/";
 
 function Footer({ onNavigate }) {
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
@@ -77,6 +78,29 @@ function Footer({ onNavigate }) {
       <div className="container footer-bottom">
         <span>© {new Date().getFullYear()} Librería SJ. Todos los derechos reservados.</span>
         <span>Compra segura de libros físicos en República Dominicana.</span>
+        <a
+          className="creator-credit"
+          href={CREATOR_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visitar página de Jhon Jimenez, CEO de Quisqueya Tech Labs"
+        >
+          <span className="creator-credit-copy">
+            <small>Creado por</small>
+            <strong>Jhon Jimenez</strong>
+            <em>CEO Quisqueya Tech Labs</em>
+          </span>
+          <span className="creator-credit-gif" aria-hidden="true">
+            <img
+              src="/reference/quisqueya-tech-labs-badge.gif"
+              alt=""
+              width="92"
+              height="65"
+              loading="lazy"
+              decoding="async"
+            />
+          </span>
+        </a>
       </div>
     </footer>
   );
