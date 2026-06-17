@@ -169,7 +169,8 @@ flowchart TD
 
 <br/>
 
-**Tecnología creada con visión, disciplina y propósito desde República Dominicana.**
+**Tecnología creada con visión, disciplina y propósito desde República Dominicana <img width="336" height="278" alt="ProudToBeDominicanDominicanIndependenceGIF" src="https://github.com/user-attachments/assets/f5eb3f3b-13b9-4bda-92fe-c8d15d33b221" />
+.**
 
 </div>
 ```
