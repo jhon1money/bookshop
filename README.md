@@ -16,7 +16,8 @@
 <br/>
 
 <a href="https://libreriasj.com">
-  <img src="https://img.shields.io/badge/Visitar%20sitio-libreriasj.com-facc15?style=for-the-badge&logo=googlechrome&logoColor=black" />
+  <img width="1887" height="872" alt="image" src="https://github.com/user-attachments/assets/4254d468-8041-4bd7-b877-4fb0055fa1ac" />
+
 </a>
 
 </div>
