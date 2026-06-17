@@ -11,7 +11,7 @@
 
 ### Plataforma full stack para venta de libros físicos en República Dominicana
 
-<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=2800&pause=700&color=FACC15&center=true&vCenter=true&width=900&lines=Catálogo+de+libros+físicos;Carrito+de+compras+dinámico;Panel+administrativo+privado;Checkout+con+WhatsApp+y+correo;Frontend+React+%2B+Backend+Flask" alt="Typing SVG" />
+<!-- <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=2800&pause=700&color=FACC15&center=true&vCenter=true&width=900&lines=Catálogo+de+libros+físicos;Carrito+de+compras+dinámico;Panel+administrativo+privado;Checkout+con+WhatsApp+y+correo;Frontend+React+%2B+Backend+Flask" alt="Typing SVG" /> -->
 
 <br/>
 
