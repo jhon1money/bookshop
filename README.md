@@ -158,3 +158,20 @@ flowchart TD
 
     B --> I[Vercel]
     C --> J[Render]
+
+```markdown
+---
+
+<div align="center">
+
+### 🚀 Desarrollado por Quisqueya Tech Labs
+
+<img src="./frontend/public/reference/quisqueya-tech-labs-badge.gif" width="260" alt="Quisqueya Tech Labs Badge" />
+
+<br/>
+
+**Tecnología creada con visión, disciplina y propósito desde República Dominicana.**
+
+</div>
+```
+
