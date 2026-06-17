@@ -1,18 +1,37 @@
-# 📚 Librería SJ
+<!-- HEADER ANIMADO -->
+<div align="center">
+
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,50:1e293b,100:facc15&height=230&section=header&text=Librería%20SJ&fontSize=58&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=E-commerce%20moderno%20para%20libros%20físicos&descAlignY=58&descSize=18" />
+
+</div>
 
 <div align="center">
 
-![Librería SJ Banner](./assets/banner-libreria-sj.png)
+# 📚 Librería SJ
 
-### Una plataforma moderna para vender libros físicos de forma rápida, organizada y profesional.
+### Plataforma full stack para venta de libros físicos en República Dominicana
 
-**Librería SJ** es un e-commerce full stack diseñado para la venta de libros físicos, con catálogo dinámico, carrito de compras, promociones, panel administrativo, gestión de inventario, órdenes, categorías, checkout personalizado, notificaciones por correo y conexión directa con WhatsApp.
+<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=2800&pause=700&color=FACC15&center=true&vCenter=true&width=900&lines=Catálogo+de+libros+físicos;Carrito+de+compras+dinámico;Panel+administrativo+privado;Checkout+con+WhatsApp+y+correo;Frontend+React+%2B+Backend+Flask" alt="Typing SVG" />
+
+<br/>
+
+<a href="https://libreriasj.com">
+  <img src="https://img.shields.io/badge/Visitar%20sitio-libreriasj.com-facc15?style=for-the-badge&logo=googlechrome&logoColor=black" />
+</a>
+
+</div>
 
 ---
 
+<div align="center">
+
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Build-Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Flask](https://img.shields.io/badge/Backend-Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/ORM-SQLAlchemy-D71F00?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/Local%20DB-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Production%20DB-PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Render](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)
 
@@ -20,179 +39,95 @@
 
 ---
 
-## 🧭 Tabla de contenido
+## 🧠 Sobre el proyecto
 
-- [Descripción del proyecto](#-descripción-del-proyecto)
-- [Demo](#-demo)
-- [Capturas](#-capturas)
-- [Características principales](#-características-principales)
-- [Tecnologías utilizadas](#-tecnologías-utilizadas)
-- [Arquitectura del proyecto](#-arquitectura-del-proyecto)
-- [Estructura de carpetas](#-estructura-de-carpetas)
-- [Modelo de datos](#-modelo-de-datos)
-- [Endpoints principales](#-endpoints-principales)
-- [Instalación local](#-instalación-local)
-- [Variables de entorno](#-variables-de-entorno)
-- [Flujo de compra](#-flujo-de-compra)
-- [Panel administrativo](#-panel-administrativo)
-- [Promociones y descuentos](#-promociones-y-descuentos)
-- [SEO y rendimiento](#-seo-y-rendimiento)
-- [Seguridad](#-seguridad)
-- [Próximas mejoras](#-próximas-mejoras)
-- [Autor](#-autor)
+**Librería SJ** es una tienda online moderna para vender libros físicos de forma sencilla, rápida y profesional.
+
+El proyecto fue desarrollado como una aplicación **full stack**, separando el frontend y el backend para lograr una arquitectura más limpia, escalable y fácil de mantener.
+
+El cliente puede navegar por el catálogo, buscar libros, ver ofertas, agregar productos al carrito y completar su pedido sin registrarse.  
+El administrador puede gestionar libros, categorías, inventario, órdenes, contenido del sitio y promociones desde un panel privado.
 
 ---
 
-## 📌 Descripción del proyecto
+## 🌐 Demo oficial
 
-**Librería SJ** es una tienda online creada para vender libros físicos de manera profesional, sencilla y confiable.
+<div align="center">
 
-El proyecto permite a los usuarios explorar libros por categorías, buscar títulos, ver ofertas, agregar productos al carrito y realizar pedidos sin necesidad de registrarse. Además, cuenta con un panel administrativo donde se pueden gestionar libros, categorías, inventario, órdenes y contenido editable del sitio.
+### 🔗 Sitio en producción
 
-La plataforma está pensada para ser clara para el cliente, fácil de administrar y escalable para futuras integraciones como pagos en línea, envíos automatizados, sistema de usuarios y recomendaciones inteligentes.
+<a href="https://libreriasj.com">
+  <img src="https://img.shields.io/badge/ABRIR%20LIBRERÍA%20SJ-111827?style=for-the-badge&logo=googlechrome&logoColor=facc15" />
+</a>
 
----
-
-## 🌐 Demo
-
-| Servicio | Enlace |
-|---|---|
-| Sitio web | [Ver Librería SJ](https://www.libreriajs.com) |
-| API Backend | Producción en Render |
-| Frontend | Producción en Vercel |
-
-> Nota: Si el dominio cambia, actualiza esta sección con el nuevo enlace oficial.
+</div>
 
 ---
 
-## 🖼 Capturas
+## 🎬 Vista animada / preview 3D
 
-> Puedes crear una carpeta llamada `assets` en tu repositorio y colocar ahí las imágenes del proyecto.
+> Coloca un GIF o WebP animado del proyecto en esta ruta:
+>
+> `frontend/public/reference/libreria-sj-3d-preview.gif`
 
-### Página principal
+<div align="center">
 
-![Home Librería SJ](./assets/home.png)
+<img src="./frontend/public/reference/libreria-sj-3d-preview.gif" width="900" alt="Demo 3D animada de Librería SJ" />
 
-### Catálogo de libros
-
-![Catálogo](./assets/catalogo.png)
-
-### Carrito de compras
-
-![Carrito](./assets/carrito.png)
-
-### Panel administrativo
-
-![Admin](./assets/admin.png)
+</div>
 
 ---
 
 ## ✨ Características principales
 
-### 🛍 Para clientes
-
-- Catálogo de libros físicos.
-- Búsqueda por título, autor o palabra clave.
-- Filtros por categorías.
-- Sección de ofertas.
-- Vista rápida de cada libro.
-- Carrito de compras dinámico.
-- Cálculo automático del total.
-- Checkout sin necesidad de crear cuenta.
-- Confirmación de pedido por WhatsApp.
-- Confirmación por correo electrónico.
-- Diseño responsive para celulares, tablets y computadoras.
-- Interfaz limpia, moderna y fácil de usar.
-
----
-
-### 🧑‍💼 Para administradores
-
-- Inicio de sesión seguro con JWT.
-- Panel privado de administración.
-- Crear, editar, activar, archivar y eliminar libros.
-- Crear y eliminar categorías.
-- Gestión de inventario.
-- Control de stock.
-- Gestión de órdenes.
-- Cambio de estado de pedidos.
-- Administración de secciones del sitio.
-- Control de libros destacados, novedades, recomendados, ofertas y preventa.
-
----
-
-### 📦 Gestión de productos
-
-Cada libro puede tener:
-
-- Título.
-- Autor.
-- Precio normal.
-- Precio de oferta.
-- Descripción.
-- Imagen.
-- Stock disponible.
-- Categoría.
-- Estado activo o archivado.
-- Marcador de oferta.
-- Marcador de destacado.
-- Marcador de novedad.
-- Marcador de preventa.
-- Marcador de recomendado.
-- Promoción 2x1.
-- Libro asociado para promoción 2x1.
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🛒 Para clientes</h3>
+      <ul>
+        <li>Catálogo de libros físicos.</li>
+        <li>Búsqueda por título, autor o palabra clave.</li>
+        <li>Filtros por categorías.</li>
+        <li>Sección de ofertas.</li>
+        <li>Carrito de compras dinámico.</li>
+        <li>Checkout sin registro obligatorio.</li>
+        <li>Confirmación por WhatsApp.</li>
+        <li>Confirmación por correo electrónico.</li>
+        <li>Diseño responsive para móviles, tablets y laptops.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🧑‍💼 Para administradores</h3>
+      <ul>
+        <li>Login privado con autenticación JWT.</li>
+        <li>Panel administrativo.</li>
+        <li>Crear, editar y archivar libros.</li>
+        <li>Gestión de categorías.</li>
+        <li>Control de inventario.</li>
+        <li>Gestión de órdenes.</li>
+        <li>Cambio de estado de pedidos.</li>
+        <li>Administración de contenido del sitio.</li>
+        <li>Control de ofertas, novedades y destacados.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 🧰 Tecnologías utilizadas
-
-### Frontend
-
-| Tecnología | Uso |
-|---|---|
-| React | Construcción de la interfaz |
-| Vite | Entorno rápido de desarrollo |
-| JavaScript | Lógica del frontend |
-| CSS | Estilos personalizados |
-| Axios | Comunicación con la API |
-| LocalStorage | Persistencia temporal del carrito |
-
----
-
-### Backend
-
-| Tecnología | Uso |
-|---|---|
-| Python | Lenguaje principal |
-| Flask | API REST |
-| SQLAlchemy | ORM para base de datos |
-| JWT | Autenticación del administrador |
-| PostgreSQL | Base de datos en producción |
-| SQLite | Base de datos local |
-| Gunicorn | Servidor WSGI en producción |
-| SMTP | Envío de correos |
-
----
-
-### Deploy
-
-| Plataforma | Uso |
-|---|---|
-| Vercel | Deploy del frontend |
-| Render | Deploy del backend |
-| PostgreSQL Render | Base de datos en producción |
-
----
-
-## 🏗 Arquitectura del proyecto
+## 🏗 Arquitectura general
 
 ```mermaid
 flowchart TD
-    A[Cliente] --> B[Frontend React en Vercel]
-    B --> C[API Flask en Render]
-    C --> D[(Base de datos PostgreSQL)]
-    C --> E[Servicio SMTP]
+    A[Usuario / Cliente] --> B[Frontend React + Vite]
+    B --> C[API Flask]
+    C --> D[(Base de datos)]
+    C --> E[Correo SMTP]
     C --> F[WhatsApp Link]
-    G[Administrador] --> B
-    B --> H[Panel Admin]
+
+    G[Administrador] --> H[Panel Admin]
+    H --> B
     H --> C
+
+    B --> I[Vercel]
+    C --> J[Render]
