@@ -2,8 +2,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  padding: 0.85rem;
+  gap: 0.65rem;
+  padding: 0.68rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -29,7 +29,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .book-badge,
@@ -38,9 +38,9 @@
   min-height: 1.7rem;
   display: inline-flex;
   align-items: center;
-  padding: 0.32rem 0.55rem;
+  padding: 0.28rem 0.46rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 750;
   line-height: 1;
   white-space: nowrap;
@@ -101,21 +101,21 @@
 
 .promo-2x1-corner {
   position: absolute;
-  top: 0.65rem;
-  right: 0.65rem;
+  top: 0.48rem;
+  right: 0.48rem;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.2rem;
-  min-height: 3.2rem;
-  padding: 0.45rem;
+  min-width: 2.65rem;
+  min-height: 2.65rem;
+  padding: 0.34rem;
   border: 2px solid rgba(255, 250, 242, 0.82);
   border-radius: 50%;
   background: var(--rose);
   color: #fffaf2;
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 950;
   box-shadow: 0 10px 22px rgba(24, 32, 42, 0.22);
   transform: rotate(8deg);
@@ -128,7 +128,7 @@
   display: block;
   overflow: hidden;
   border-radius: var(--radius-card);
-  background: #ede5da;
+  background: #f0eadf;
   aspect-ratio: 3 / 4;
 }
 
@@ -136,27 +136,27 @@
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   transition: transform 220ms ease;
 }
 
 .book-card:hover .book-image {
-  transform: scale(1.025);
+  transform: scale(1.015);
 }
 
 .book-content {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .book-title,
 .book-title-button {
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 1.12rem;
+  font-size: 1rem;
   font-weight: 750;
   line-height: 1.18;
 }
@@ -167,24 +167,24 @@
 
 .book-author {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
 }
 
 .book-prices {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.45rem;
-  margin-top: 0.25rem;
+  gap: 0.34rem;
+  margin-top: 0.18rem;
 }
 
 .book-promo-note {
   width: fit-content;
-  padding: 0.34rem 0.48rem;
+  padding: 0.28rem 0.42rem;
   border-radius: 999px;
   background: #fff3c4;
   color: var(--green);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 800;
   line-height: 1.35;
 }
@@ -192,7 +192,7 @@
 .book-price,
 .price-offer {
   color: var(--ink);
-  font-size: 1.04rem;
+  font-size: 0.95rem;
   font-weight: 800;
 }
 
@@ -209,21 +209,22 @@
 .book-card-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.55rem;
+  gap: 0.42rem;
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.35rem;
 }
 
 .book-button,
 .book-detail-button {
-  min-height: 2.7rem;
+  min-height: 2.42rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem 0.85rem;
+  padding: 0.58rem 0.68rem;
   border-radius: var(--radius-control);
   border: 1px solid transparent;
   font-weight: 800;
+  font-size: 0.88rem;
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
 }

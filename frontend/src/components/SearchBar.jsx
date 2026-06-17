@@ -99,13 +99,23 @@ function SearchBar({
 
           <button
             type="button"
-            className="clear-filters-button"
+            className="clear-filters-button icon-clear-button"
             onClick={() => {
               onClearFilters();
               setIsFilterOpen(false);
             }}
+            aria-label="Limpiar filtros"
+            title="Limpiar filtros"
           >
-            Limpiar
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeWidth="2.2"
+              />
+            </svg>
             {activeFiltersCount > 0 ? <span className="clear-filters-badge">{activeFiltersCount}</span> : null}
           </button>
         </div>
