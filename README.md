@@ -143,7 +143,7 @@ El administrador puede gestionar libros, categorías, inventario, órdenes, cont
 ---
 
 ## 🏗 Arquitectura general
-'''Mermaid
+```mermaid
 
 flowchart TD
     A[Usuario / Cliente] --> B[Frontend React + Vite]
@@ -158,7 +158,7 @@ flowchart TD
 
     B --> I[Vercel]
     C --> J[Render]
-'''
+```
 ---
 
 <div align="center">
