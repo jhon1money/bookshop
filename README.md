@@ -165,11 +165,11 @@ flowchart TD
 
 ### 🚀 Desarrollado por Quisqueya Tech Labs
 
-<img src="./frontend/public/reference/quisqueya-tech-labs-badge.gif" width="260" alt="Quisqueya Tech Labs Badge" />
+<img width="680" height="480" alt="quisqueya_tech_labs" src="https://github.com/user-attachments/assets/5395f5f4-7ad1-45f5-a37c-6c6f99e7ecdc" />
 
 <br/>
 
-**Tecnología creada con visión, disciplina y propósito desde República Dominicana <img width="336" height="278" alt="ProudToBeDominicanDominicanIndependenceGIF" src="https://github.com/user-attachments/assets/f5eb3f3b-13b9-4bda-92fe-c8d15d33b221" />
+**Tecnología creada con visión, disciplina y propósito desde República Dominicana <img width="100" height="100" alt="ProudToBeDominicanDominicanIndependenceGIF" src="https://github.com/user-attachments/assets/f5eb3f3b-13b9-4bda-92fe-c8d15d33b221" />
 .**
 
 </div>
