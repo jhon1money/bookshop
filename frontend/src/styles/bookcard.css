@@ -128,13 +128,15 @@
   display: block;
   overflow: hidden;
   border-radius: var(--radius-card);
-  background: #f0eadf;
+  background: linear-gradient(180deg, #fff8ec, #ebe2d4);
   aspect-ratio: 3 / 4;
+  box-shadow: inset 0 0 0 1px rgba(24, 32, 42, 0.04);
 }
 
 .book-image {
-  width: 100%;
-  height: 100%;
+  width: calc(100% + 0.6rem);
+  height: calc(100% + 0.6rem);
+  margin: -0.3rem;
   display: block;
   object-fit: contain;
   object-position: center;
@@ -142,7 +144,7 @@
 }
 
 .book-card:hover .book-image {
-  transform: scale(1.015);
+  transform: scale(1.012);
 }
 
 .book-content {
