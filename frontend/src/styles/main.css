@@ -930,11 +930,38 @@ img {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.75rem;
-  padding: 0.85rem;
-  border: 1px solid var(--border);
+  align-items: center;
+  padding: 0.72rem;
+  border: 1px solid rgba(24, 32, 42, 0.09);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  background:
+    linear-gradient(135deg, rgba(255, 250, 242, 0.94), rgba(255, 247, 235, 0.82)),
+    var(--surface);
+  box-shadow: 0 14px 34px rgba(24, 32, 42, 0.07);
+}
+
+.search-box {
+  position: relative;
+  min-width: 0;
+  display: block;
+}
+
+.search-input-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.95rem;
+  z-index: 1;
+  width: 1.05rem;
+  height: 1.05rem;
+  display: inline-flex;
+  color: rgba(37, 84, 73, 0.72);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.search-input-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .search-box input,
@@ -943,11 +970,16 @@ img {
 .checkout-field select {
   width: 100%;
   min-height: 2.85rem;
-  padding: 0.72rem 0.85rem;
-  border: 1px solid var(--border);
+  padding: 0.72rem 0.95rem;
+  border: 1px solid rgba(24, 32, 42, 0.1);
   border-radius: var(--radius-control);
   background: var(--surface-strong);
   color: var(--ink);
+}
+
+.search-box input {
+  padding-left: 2.7rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 .search-box input:focus,
@@ -961,8 +993,8 @@ img {
 
 .search-actions {
   display: flex;
-  align-items: stretch;
-  gap: 0.6rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .filter-dropdown {
@@ -974,19 +1006,20 @@ img {
 .clear-filters-button,
 .category-chip,
 .combo-chip {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(24, 32, 42, 0.1);
   border-radius: var(--radius-control);
   background: var(--surface-strong);
   color: var(--ink);
   font-weight: 800;
   cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
 .filter-button,
 .offer-toggle,
 .clear-filters-button {
   min-height: 2.85rem;
-  padding: 0.6rem 0.85rem;
+  padding: 0.55rem 0.75rem;
 }
 
 .icon-clear-button {
@@ -1001,17 +1034,65 @@ img {
 }
 
 .filter-button {
-  min-width: 9.5rem;
+  min-width: 10.4rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
+  gap: 0.62rem;
+  text-align: left;
+}
+
+.filter-button-icon,
+.offer-toggle-icon {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(37, 84, 73, 0.09);
+  color: var(--green);
+}
+
+.filter-button-icon svg,
+.offer-toggle-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.filter-button-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.04rem;
+}
+
+.filter-button-copy strong {
+  line-height: 1.05;
 }
 
 .filter-button-meta {
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.1;
+}
+
+.offer-toggle {
+  min-width: 11rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  background: linear-gradient(135deg, #fffaf2, #fff4df);
+}
+
+.filter-button:hover,
+.offer-toggle:hover,
+.clear-filters-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 84, 73, 0.22);
+  box-shadow: 0 12px 24px rgba(24, 32, 42, 0.09);
 }
 
 .filter-button.active,
@@ -1019,12 +1100,20 @@ img {
 .category-chip.active,
 .combo-chip.active {
   border-color: var(--green);
-  background: var(--green);
+  background: linear-gradient(135deg, var(--green), #1b443b);
   color: #fffaf2;
+  box-shadow: 0 14px 28px rgba(37, 84, 73, 0.2);
 }
 
-.filter-button.active .filter-button-meta {
+.filter-button.active .filter-button-meta,
+.filter-button.active .filter-button-icon,
+.offer-toggle.active .offer-toggle-icon {
   color: rgba(255, 250, 242, 0.75);
+}
+
+.filter-button.active .filter-button-icon,
+.offer-toggle.active .offer-toggle-icon {
+  background: rgba(255, 250, 242, 0.14);
 }
 
 .filter-menu {
@@ -1094,7 +1183,15 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  border-style: dashed;
+  border-style: solid;
+  background: rgba(255, 250, 242, 0.74);
+  color: var(--ink-soft);
+}
+
+.clear-filters-button:hover {
+  background: #fff1ee;
+  color: #9c3129;
+  border-color: rgba(184, 75, 63, 0.22);
 }
 
 .clear-filters-button svg {

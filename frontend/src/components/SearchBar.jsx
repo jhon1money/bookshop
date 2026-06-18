@@ -21,6 +21,12 @@ function SearchBar({
     <div className="filters-stack">
       <section className="search-panel">
         <label className="search-box">
+          <span className="search-input-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.9" />
+              <path d="M15.8 15.8 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.9" />
+            </svg>
+          </span>
           <input
             type="text"
             value={searchTerm}
@@ -38,9 +44,22 @@ function SearchBar({
               onClick={() => setIsFilterOpen((currentValue) => !currentValue)}
               aria-expanded={isFilterOpen}
             >
-              Filtros
-              <span className="filter-button-meta">
-                {activeCategory ? activeCategory.label : "Todos"}
+              <span className="filter-button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M4.5 6.5h15M7.5 12h9M10 17.5h4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </span>
+              <span className="filter-button-copy">
+                <strong>Filtros</strong>
+                <span className="filter-button-meta">
+                  {activeCategory ? activeCategory.label : "Todos"}
+                </span>
               </span>
             </button>
 
@@ -94,7 +113,19 @@ function SearchBar({
             onClick={onToggleOffers}
             aria-pressed={showOffersOnly}
           >
-            {showOffersOnly ? "Mostrando ofertas" : "Ver solo ofertas"}
+            <span className="offer-toggle-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M4.8 11.6 11.6 4.8h6.2c0.8 0 1.4 0.6 1.4 1.4v6.2l-6.8 6.8c-0.6 0.6-1.5 0.6-2.1 0l-5.5-5.5c-0.6-0.6-0.6-1.5 0-2.1Z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                />
+                <circle cx="15.8" cy="8.2" r="1.15" fill="currentColor" />
+              </svg>
+            </span>
+            <span>{showOffersOnly ? "Ofertas activas" : "Ver solo ofertas"}</span>
           </button>
 
           <button
