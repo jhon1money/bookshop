@@ -696,8 +696,17 @@ def sanitize_book_payload(data, required=False):
 
     price = payload.get("precio")
     offer_price = payload.get("precio_oferta")
+    offer_enabled = payload.get("oferta", False)
+    if offer_enabled and offer_price is None and (required or "precio_oferta" in data):
+        raise ValueError("Para activar una oferta debes indicar el precio de oferta.")
     if price is not None and offer_price is not None and offer_price >= price:
         raise ValueError("La oferta debe ser menor que el precio.")
+    if (
+        payload.get("promo_2x1", False)
+        and not payload.get("promo_2x1_partner_id")
+        and (required or "promo_2x1_partner_id" in data)
+    ):
+        raise ValueError("Para activar el 2x1 debes elegir el libro enlazado.")
 
     return payload
 
@@ -1819,8 +1828,15 @@ def update_book(current_user, id):
         payload = sanitize_book_payload(data)
         effective_price = payload.get("precio", book.precio)
         effective_offer_price = payload.get("precio_oferta", book.precio_oferta)
+        effective_offer_enabled = payload.get("oferta", book.oferta)
+        if effective_offer_enabled and effective_offer_price is None:
+            raise ValueError("Para activar una oferta debes indicar el precio de oferta.")
         if effective_offer_price is not None and effective_offer_price >= effective_price:
             raise ValueError("La oferta debe ser menor que el precio.")
+        effective_promo_enabled = payload.get("promo_2x1", book.promo_2x1)
+        effective_promo_partner_id = payload.get("promo_2x1_partner_id", book.promo_2x1_partner_id)
+        if effective_promo_enabled and not effective_promo_partner_id:
+            raise ValueError("Para activar el 2x1 debes elegir el libro enlazado.")
 
         for field in [
             "titulo",
@@ -1843,7 +1859,7 @@ def update_book(current_user, id):
         if "promo_2x1" in data or "promo_2x1_partner_id" in data:
             sync_book_promo_pair(
                 book,
-                payload.get("promo_2x1_partner_id") if payload.get("promo_2x1", False) else None,
+                effective_promo_partner_id if effective_promo_enabled else None,
             )
 
         db.session.commit()

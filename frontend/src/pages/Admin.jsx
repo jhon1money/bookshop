@@ -149,6 +149,49 @@ function normalizeBookForm(book) {
   };
 }
 
+function getBookFormValidationErrors(form) {
+  const errors = {};
+  const price = Number(form.precio);
+  const offerPrice = Number(form.precio_oferta);
+  const stock = Number(form.stock);
+
+  if (!form.titulo.trim()) {
+    errors.titulo = "Escribe el título del libro.";
+  }
+
+  if (!form.autor.trim()) {
+    errors.autor = "Escribe el autor del libro.";
+  }
+
+  if (form.precio === "" || Number.isNaN(price) || price < 0) {
+    errors.precio = "Indica un precio válido. Puede ser 0 o mayor.";
+  }
+
+  if (form.stock === "" || Number.isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+    errors.stock = "Indica el stock en números enteros, sin negativos.";
+  }
+
+  if (!form.descripcion.trim()) {
+    errors.descripcion = "Agrega una descripción corta para que el cliente entienda el libro.";
+  }
+
+  if (form.oferta) {
+    if (form.precio_oferta === "" || Number.isNaN(offerPrice)) {
+      errors.precio_oferta = "Para activar una oferta, escribe el precio de oferta.";
+    } else if (offerPrice < 0) {
+      errors.precio_oferta = "El precio de oferta no puede ser negativo.";
+    } else if (!Number.isNaN(price) && offerPrice >= price) {
+      errors.precio_oferta = "El precio de oferta debe ser menor que el precio normal.";
+    }
+  }
+
+  if (form.promo_2x1 && !form.promo_2x1_partner_id) {
+    errors.promo_2x1_partner_id = "Para activar el 2x1, elige el libro que va incluido en la promoción.";
+  }
+
+  return errors;
+}
+
 function Admin({ onBack }) {
   const [token, setToken] = useState(getAdminToken);
   const [adminUser, setAdminUser] = useState(getAdminUser);
@@ -166,6 +209,7 @@ function Admin({ onBack }) {
   const [orderFilters, setOrderFilters] = useState({ status: "", search: "", start_date: "", end_date: "" });
   const [dashboardFilters, setDashboardFilters] = useState({ start_date: "", end_date: "" });
   const [bookForm, setBookForm] = useState(EMPTY_BOOK_FORM);
+  const [bookFormErrors, setBookFormErrors] = useState({});
   const [editingBookId, setEditingBookId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [selectedSectionKey, setSelectedSectionKey] = useState("about");
@@ -378,6 +422,18 @@ function handleLogout() {
     setCategories([]);
     setEditingBookId(null);
     setBookForm(EMPTY_BOOK_FORM);
+    setBookFormErrors({});
+  }
+
+  function clearBookFormError(field) {
+    setBookFormErrors((currentErrors) => {
+      if (!currentErrors[field]) {
+        return currentErrors;
+      }
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
   }
 
   async function handleLoginSubmit(event) {
@@ -506,12 +562,20 @@ function handleLogout() {
     event.preventDefault();
     setError("");
     setSuccess("");
+    setBookFormErrors({});
+
+    const validationErrors = getBookFormValidationErrors(bookForm);
+    if (Object.keys(validationErrors).length > 0) {
+      setBookFormErrors(validationErrors);
+      setError("Revisa los campos marcados antes de guardar el libro.");
+      return;
+    }
 
     const payload = {
       ...bookForm,
       precio: Number(bookForm.precio),
       stock: Number(bookForm.stock),
-      precio_oferta: bookForm.precio_oferta === "" ? null : Number(bookForm.precio_oferta),
+      precio_oferta: bookForm.oferta ? Number(bookForm.precio_oferta) : null,
       category_id: bookForm.category_id === "" ? null : Number(bookForm.category_id),
       promo_2x1_partner_id:
         bookForm.promo_2x1 && bookForm.promo_2x1_partner_id !== ""
@@ -530,6 +594,7 @@ function handleLogout() {
 
       setEditingBookId(null);
       setBookForm(EMPTY_BOOK_FORM);
+      setBookFormErrors({});
       await loadAdminData(token, orderFilters);
     } catch (bookError) {
       setError(bookError.message || "No se guardó el libro.");
@@ -545,6 +610,7 @@ function handleLogout() {
       if (editingBookId === bookId) {
         setEditingBookId(null);
         setBookForm(EMPTY_BOOK_FORM);
+        setBookFormErrors({});
       }
       setSuccess(
         response.message === "Libro archivado." ? "Libro archivado." : "Libro eliminado.",
@@ -1211,18 +1277,38 @@ function handleLogout() {
                   <input
                     type="text"
                     value={bookForm.titulo}
-                    onChange={(event) => setBookForm((currentValue) => ({ ...currentValue, titulo: event.target.value }))}
+                    onChange={(event) => {
+                      setBookForm((currentValue) => ({ ...currentValue, titulo: event.target.value }));
+                      clearBookFormError("titulo");
+                    }}
+                    aria-invalid={Boolean(bookFormErrors.titulo)}
+                    aria-describedby={bookFormErrors.titulo ? "book-title-error" : undefined}
                     required
                   />
+                  {bookFormErrors.titulo ? (
+                    <small id="book-title-error" className="field-error">
+                      {bookFormErrors.titulo}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="checkout-field">
                   <span>Autor</span>
                   <input
                     type="text"
                     value={bookForm.autor}
-                    onChange={(event) => setBookForm((currentValue) => ({ ...currentValue, autor: event.target.value }))}
+                    onChange={(event) => {
+                      setBookForm((currentValue) => ({ ...currentValue, autor: event.target.value }));
+                      clearBookFormError("autor");
+                    }}
+                    aria-invalid={Boolean(bookFormErrors.autor)}
+                    aria-describedby={bookFormErrors.autor ? "book-author-error" : undefined}
                     required
                   />
+                  {bookFormErrors.autor ? (
+                    <small id="book-author-error" className="field-error">
+                      {bookFormErrors.autor}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="checkout-field">
                   <span>Precio</span>
@@ -1231,24 +1317,57 @@ function handleLogout() {
                     min="0"
                     step="0.01"
                     value={bookForm.precio}
-                    onChange={(event) => setBookForm((currentValue) => ({ ...currentValue, precio: event.target.value }))}
+                    onChange={(event) => {
+                      setBookForm((currentValue) => ({ ...currentValue, precio: event.target.value }));
+                      clearBookFormError("precio");
+                      clearBookFormError("precio_oferta");
+                    }}
+                    aria-invalid={Boolean(bookFormErrors.precio)}
+                    aria-describedby={bookFormErrors.precio ? "book-price-error" : undefined}
                     required
                   />
+                  {bookFormErrors.precio ? (
+                    <small id="book-price-error" className="field-error">
+                      {bookFormErrors.precio}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="checkout-field">
-                  <span>Precio oferta</span>
+                  <span>{bookForm.oferta ? "Precio oferta requerido" : "Precio oferta"}</span>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={bookForm.precio_oferta}
                     onChange={(event) =>
-                      setBookForm((currentValue) => ({
-                        ...currentValue,
-                        precio_oferta: event.target.value,
-                      }))
+                      {
+                        setBookForm((currentValue) => ({
+                          ...currentValue,
+                          precio_oferta: event.target.value,
+                        }));
+                        clearBookFormError("precio_oferta");
+                      }
+                    }
+                    disabled={!bookForm.oferta}
+                    required={bookForm.oferta}
+                    aria-invalid={Boolean(bookFormErrors.precio_oferta)}
+                    aria-describedby={
+                      bookFormErrors.precio_oferta
+                        ? "book-offer-price-error"
+                        : "book-offer-price-help"
                     }
                   />
+                  {bookFormErrors.precio_oferta ? (
+                    <small id="book-offer-price-error" className="field-error">
+                      {bookFormErrors.precio_oferta}
+                    </small>
+                  ) : (
+                    <small id="book-offer-price-help" className="field-hint">
+                      {bookForm.oferta
+                        ? "Debe ser menor que el precio normal."
+                        : "Activa “Marcar como oferta” para usar este precio."}
+                    </small>
+                  )}
                 </label>
                 <label className="checkout-field">
                   <span>Stock</span>
@@ -1256,9 +1375,19 @@ function handleLogout() {
                     type="number"
                     min="0"
                     value={bookForm.stock}
-                    onChange={(event) => setBookForm((currentValue) => ({ ...currentValue, stock: event.target.value }))}
+                    onChange={(event) => {
+                      setBookForm((currentValue) => ({ ...currentValue, stock: event.target.value }));
+                      clearBookFormError("stock");
+                    }}
+                    aria-invalid={Boolean(bookFormErrors.stock)}
+                    aria-describedby={bookFormErrors.stock ? "book-stock-error" : undefined}
                     required
                   />
+                  {bookFormErrors.stock ? (
+                    <small id="book-stock-error" className="field-error">
+                      {bookFormErrors.stock}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="checkout-field">
                   <span>Categoría</span>
@@ -1285,13 +1414,23 @@ function handleLogout() {
                     rows="4"
                     value={bookForm.descripcion}
                     onChange={(event) =>
-                      setBookForm((currentValue) => ({
-                        ...currentValue,
-                        descripcion: event.target.value,
-                      }))
+                      {
+                        setBookForm((currentValue) => ({
+                          ...currentValue,
+                          descripcion: event.target.value,
+                        }));
+                        clearBookFormError("descripcion");
+                      }
                     }
+                    aria-invalid={Boolean(bookFormErrors.descripcion)}
+                    aria-describedby={bookFormErrors.descripcion ? "book-description-error" : undefined}
                     required
                   />
+                  {bookFormErrors.descripcion ? (
+                    <small id="book-description-error" className="field-error">
+                      {bookFormErrors.descripcion}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="checkout-field admin-textarea-field">
                   <span>Imagen</span>
@@ -1306,7 +1445,15 @@ function handleLogout() {
                   <input
                     type="checkbox"
                     checked={bookForm.oferta}
-                    onChange={(event) => setBookForm((currentValue) => ({ ...currentValue, oferta: event.target.checked }))}
+                    onChange={(event) => {
+                      const isOffer = event.target.checked;
+                      setBookForm((currentValue) => ({
+                        ...currentValue,
+                        oferta: isOffer,
+                        precio_oferta: isOffer ? currentValue.precio_oferta : "",
+                      }));
+                      clearBookFormError("precio_oferta");
+                    }}
                   />
                   <span>Marcar como oferta</span>
                 </label>
@@ -1361,11 +1508,20 @@ function handleLogout() {
                   <select
                     value={bookForm.promo_2x1_partner_id}
                     onChange={(event) =>
-                      setBookForm((currentValue) => ({
-                        ...currentValue,
-                        promo_2x1: Boolean(event.target.value),
-                        promo_2x1_partner_id: event.target.value,
-                      }))
+                      {
+                        setBookForm((currentValue) => ({
+                          ...currentValue,
+                          promo_2x1: Boolean(event.target.value),
+                          promo_2x1_partner_id: event.target.value,
+                        }));
+                        clearBookFormError("promo_2x1_partner_id");
+                      }
+                    }
+                    aria-invalid={Boolean(bookFormErrors.promo_2x1_partner_id)}
+                    aria-describedby={
+                      bookFormErrors.promo_2x1_partner_id
+                        ? "book-promo-partner-error"
+                        : "book-promo-partner-help"
                     }
                   >
                     <option value="">Sin enlace 2x1</option>
@@ -1375,9 +1531,15 @@ function handleLogout() {
                       </option>
                     ))}
                   </select>
-                  <small>
-                    Al guardar, ambos libros quedan enlazados y la tienda muestra la promoción.
-                  </small>
+                  {bookFormErrors.promo_2x1_partner_id ? (
+                    <small id="book-promo-partner-error" className="field-error">
+                      {bookFormErrors.promo_2x1_partner_id}
+                    </small>
+                  ) : (
+                    <small id="book-promo-partner-help">
+                      Al guardar, ambos libros quedan enlazados y la tienda muestra la promoción.
+                    </small>
+                  )}
                 </label>
 
                 <div className="admin-form-actions">
@@ -1390,6 +1552,7 @@ function handleLogout() {
                     onClick={() => {
                       setEditingBookId(null);
                       setBookForm(EMPTY_BOOK_FORM);
+                      setBookFormErrors({});
                     }}
                   >
                     Limpiar
@@ -1446,6 +1609,7 @@ function handleLogout() {
                               onClick={() => {
                                 setEditingBookId(book.id);
                                 setBookForm(normalizeBookForm(book));
+                                setBookFormErrors({});
                                 setActiveTab("books");
                                 window.scrollTo({ top: 0, behavior: "smooth" });
                               }}

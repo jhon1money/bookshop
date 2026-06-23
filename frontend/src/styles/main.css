@@ -991,6 +991,22 @@ img {
   box-shadow: 0 0 0 4px var(--focus);
 }
 
+.checkout-field input:disabled,
+.checkout-field textarea:disabled,
+.checkout-field select:disabled {
+  cursor: not-allowed;
+  background: rgba(245, 239, 229, 0.72);
+  color: var(--muted);
+}
+
+.checkout-field input[aria-invalid="true"],
+.checkout-field textarea[aria-invalid="true"],
+.checkout-field select[aria-invalid="true"] {
+  border-color: rgba(169, 39, 39, 0.62);
+  background: #fff8f6;
+  box-shadow: 0 0 0 3px rgba(169, 39, 39, 0.08);
+}
+
 .search-actions {
   display: flex;
   align-items: center;
