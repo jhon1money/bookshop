@@ -2314,6 +2314,70 @@ img {
   color: var(--ink);
 }
 
+.admin-confirm-backdrop {
+  z-index: 190;
+}
+
+.admin-confirm-modal {
+  width: min(31rem, 100%);
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.1rem;
+}
+
+.admin-confirm-icon {
+  width: 2.7rem;
+  height: 2.7rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff0ed;
+  color: #9c3129;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.admin-confirm-copy {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-confirm-copy h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.admin-confirm-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.admin-confirm-copy strong {
+  color: var(--ink);
+}
+
+.admin-confirm-details {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(184, 75, 63, 0.14);
+  border-radius: var(--radius-card);
+  background: #fff8f6;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.admin-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
 .book-modal-grid {
   display: grid;
   grid-template-columns: minmax(14rem, 19rem) minmax(0, 1fr);
@@ -4224,6 +4288,15 @@ img {
   .admin-book-row-actions .secondary-button,
   .admin-book-row-actions .danger-button {
     flex: 1;
+  }
+
+  .admin-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-confirm-actions .secondary-button,
+  .admin-confirm-actions .danger-button {
+    width: 100%;
   }
 
   .admin-topbar-actions,

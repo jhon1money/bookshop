@@ -211,6 +211,8 @@ function Admin({ onBack }) {
   const [bookForm, setBookForm] = useState(EMPTY_BOOK_FORM);
   const [bookFormErrors, setBookFormErrors] = useState({});
   const [editingBookId, setEditingBookId] = useState(null);
+  const [bookToDelete, setBookToDelete] = useState(null);
+  const [deletingBookId, setDeletingBookId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [selectedSectionKey, setSelectedSectionKey] = useState("about");
   const [sectionForm, setSectionForm] = useState({
@@ -411,6 +413,21 @@ function Admin({ onBack }) {
     return () => window.clearInterval(intervalId);
   }, [dashboardFilters, loadAdminData, orderFilters, token]);
 
+  useEffect(() => {
+    if (!bookToDelete || deletingBookId) {
+      return undefined;
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setBookToDelete(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [bookToDelete, deletingBookId]);
+
 function handleLogout() {
     clearAdminSession();
     setToken("");
@@ -423,6 +440,8 @@ function handleLogout() {
     setEditingBookId(null);
     setBookForm(EMPTY_BOOK_FORM);
     setBookFormErrors({});
+    setBookToDelete(null);
+    setDeletingBookId(null);
   }
 
   function clearBookFormError(field) {
@@ -601,9 +620,15 @@ function handleLogout() {
     }
   }
 
-  async function handleDeleteBook(bookId) {
+  async function handleConfirmDeleteBook() {
+    if (!bookToDelete) {
+      return;
+    }
+
+    const bookId = bookToDelete.id;
     setError("");
     setSuccess("");
+    setDeletingBookId(bookId);
 
     try {
       const response = await deleteAdminBook(token, bookId);
@@ -615,9 +640,12 @@ function handleLogout() {
       setSuccess(
         response.message === "Libro archivado." ? "Libro archivado." : "Libro eliminado.",
       );
+      setBookToDelete(null);
       await loadAdminData(token, orderFilters);
     } catch (bookError) {
       setError(bookError.message || "No se eliminó el libro.");
+    } finally {
+      setDeletingBookId(null);
     }
   }
 
@@ -1619,7 +1647,7 @@ function handleLogout() {
                             <button
                               type="button"
                               className="danger-button"
-                              onClick={() => handleDeleteBook(book.id)}
+                              onClick={() => setBookToDelete(book)}
                             >
                               Eliminar
                             </button>
@@ -1801,6 +1829,63 @@ function handleLogout() {
               </div>
             </div>
           </section>
+        ) : null}
+
+        {bookToDelete ? (
+          <div
+            className="book-modal-backdrop admin-confirm-backdrop"
+            role="presentation"
+            onClick={() => {
+              if (!deletingBookId) {
+                setBookToDelete(null);
+              }
+            }}
+          >
+            <article
+              className="book-modal admin-confirm-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-book-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="admin-confirm-icon" aria-hidden="true">
+                !
+              </div>
+              <div className="admin-confirm-copy">
+                <p className="section-label">Confirmar eliminación</p>
+                <h2 id="delete-book-title">¿Eliminar este libro?</h2>
+                <p>
+                  Vas a eliminar <strong>{bookToDelete.titulo}</strong>. Esta acción puede quitarlo del catálogo
+                  visible; si el libro tiene órdenes asociadas, el sistema lo archivará para proteger el historial.
+                </p>
+                <div className="admin-confirm-details">
+                  <span>Categoría: {bookToDelete.category_name || "Sin categoría"}</span>
+                  <span>
+                    Precio: {formatCurrency(bookToDelete.oferta && bookToDelete.precio_oferta ? bookToDelete.precio_oferta : bookToDelete.precio)}
+                  </span>
+                  <span>Stock: {bookToDelete.stock ?? 0}</span>
+                </div>
+              </div>
+              <div className="admin-confirm-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setBookToDelete(null)}
+                  disabled={Boolean(deletingBookId)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={handleConfirmDeleteBook}
+                  disabled={Boolean(deletingBookId)}
+                >
+                  {deletingBookId ? "Eliminando..." : "Sí, eliminar"}
+                </button>
+              </div>
+            </article>
+          </div>
         ) : null}
       </section>
     </main>
