@@ -1194,7 +1194,7 @@ function handleLogout() {
 
         {activeTab === "books" ? (
           <section className="admin-grid">
-            <div className="admin-panel-card">
+            <div className="admin-panel-card admin-book-form-card">
               <div className="admin-section-heading">
                 <div>
                   <p className="section-label">{editingBookId ? "Editar libro" : "Nuevo libro"}</p>
@@ -1405,8 +1405,8 @@ function handleLogout() {
                   <h2>Gestión de libros</h2>
                 </div>
               </div>
-              <div className="admin-table-wrap">
-                <table className="admin-table">
+              <div className="admin-table-wrap admin-books-table-wrap">
+                <table className="admin-table admin-books-table">
                   <thead>
                     <tr>
                       <th>Título</th>
@@ -1422,12 +1422,12 @@ function handleLogout() {
                   <tbody>
                     {books.map((book) => (
                       <tr key={book.id}>
-                        <td>{book.titulo}</td>
+                        <td className="admin-book-title-cell">{book.titulo}</td>
                         <td>{book.category_name}</td>
                         <td>{formatCurrency(book.oferta && book.precio_oferta ? book.precio_oferta : book.precio)}</td>
                         <td>{book.stock}</td>
                         <td>{book.sold_units}</td>
-                        <td>
+                        <td className="admin-book-tags-cell">
                           <div className="admin-tag-stack">
                             {book.oferta ? <span className="admin-tag">Oferta</span> : null}
                             {book.destacado ? <span className="admin-tag">Destacado</span> : null}
@@ -1437,9 +1437,9 @@ function handleLogout() {
                             {book.promo_2x1 ? <span className="admin-tag admin-tag-promo">2x1</span> : null}
                           </div>
                         </td>
-                        <td>{book.status_label}</td>
-                        <td>
-                          <div className="admin-inline-actions">
+                        <td className="admin-book-status-cell">{book.status_label}</td>
+                        <td className="admin-book-actions-cell">
+                          <div className="admin-inline-actions admin-book-row-actions">
                             <button
                               type="button"
                               className="secondary-button"

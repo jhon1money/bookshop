@@ -2398,6 +2398,11 @@ img {
   grid-column: span 6;
 }
 
+.admin-book-form-card,
+.admin-books-list-card {
+  grid-column: 1 / -1;
+}
+
 .admin-books-list-card,
 .admin-categories-list-card {
   align-self: start;
@@ -2618,6 +2623,89 @@ img {
 
 .admin-table tbody tr:hover {
   background: rgba(37, 84, 73, 0.05);
+}
+
+.admin-books-table-wrap {
+  overflow-x: visible;
+}
+
+.admin-books-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.admin-books-table th,
+.admin-books-table td {
+  padding: 0.68rem 0.62rem;
+  vertical-align: middle;
+}
+
+.admin-books-table th:nth-child(1) {
+  width: 19%;
+}
+
+.admin-books-table th:nth-child(2) {
+  width: 13%;
+}
+
+.admin-books-table th:nth-child(3) {
+  width: 12%;
+}
+
+.admin-books-table th:nth-child(4),
+.admin-books-table th:nth-child(5) {
+  width: 6.5%;
+}
+
+.admin-books-table th:nth-child(6) {
+  width: 20%;
+}
+
+.admin-books-table th:nth-child(7) {
+  width: 10%;
+}
+
+.admin-books-table th:nth-child(8) {
+  width: 13%;
+}
+
+.admin-book-title-cell,
+.admin-book-status-cell,
+.admin-books-table td:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+.admin-book-title-cell {
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.admin-book-tags-cell .admin-tag-stack {
+  gap: 0.28rem;
+}
+
+.admin-book-tags-cell .admin-tag {
+  max-width: 100%;
+  font-size: 0.72rem;
+}
+
+.admin-book-actions-cell {
+  min-width: 0;
+}
+
+.admin-book-row-actions {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.admin-book-row-actions .secondary-button,
+.admin-book-row-actions .danger-button {
+  min-height: 2.2rem;
+  padding: 0.46rem 0.62rem;
+  border-radius: 0.7rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
 }
 
 .admin-category-list {
@@ -3183,6 +3271,37 @@ img {
 
 .admin-book-form {
   align-items: start;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.admin-book-form .checkout-field {
+  grid-column: span 3;
+}
+
+.admin-book-form .admin-textarea-field,
+.admin-book-form .admin-promo-field {
+  grid-column: span 6;
+}
+
+.admin-book-form textarea {
+  min-height: 6.25rem;
+  max-height: 11rem;
+}
+
+.admin-book-form .admin-checkbox {
+  grid-column: span 2;
+}
+
+.admin-book-form .admin-form-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+}
+
+.admin-book-form .checkout-submit,
+.admin-book-form .secondary-button {
+  width: auto;
+  min-height: 2.75rem;
+  padding-inline: 1.1rem;
 }
 
 .admin-promo-field {
@@ -3557,6 +3676,16 @@ img {
 
   .admin-panel-card {
     grid-column: 1 / -1;
+  }
+
+  .admin-book-form .checkout-field,
+  .admin-book-form .admin-textarea-field,
+  .admin-book-form .admin-promo-field {
+    grid-column: span 6;
+  }
+
+  .admin-book-form .admin-checkbox {
+    grid-column: span 4;
   }
 
   .admin-order-filters {
@@ -4007,6 +4136,78 @@ img {
 
   .book-modal-copy h3 {
     font-size: 1.8rem;
+  }
+
+  .admin-book-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-book-form .checkout-field,
+  .admin-book-form .admin-textarea-field,
+  .admin-book-form .admin-promo-field,
+  .admin-book-form .admin-checkbox {
+    grid-column: 1 / -1;
+  }
+
+  .admin-books-table-wrap {
+    border: 0;
+    background: transparent;
+  }
+
+  .admin-books-table,
+  .admin-books-table tbody,
+  .admin-books-table tr,
+  .admin-books-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-books-table {
+    border-collapse: separate;
+    border-spacing: 0 0.7rem;
+  }
+
+  .admin-books-table thead {
+    display: none;
+  }
+
+  .admin-books-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem 0.8rem;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-strong);
+  }
+
+  .admin-books-table td {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .admin-books-table td:nth-child(2),
+  .admin-books-table td:nth-child(3),
+  .admin-books-table td:nth-child(4),
+  .admin-books-table td:nth-child(5),
+  .admin-book-tags-cell,
+  .admin-book-status-cell {
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
+
+  .admin-book-tags-cell,
+  .admin-book-actions-cell {
+    grid-column: 1 / -1;
+  }
+
+  .admin-book-row-actions {
+    justify-content: stretch;
+  }
+
+  .admin-book-row-actions .secondary-button,
+  .admin-book-row-actions .danger-button {
+    flex: 1;
   }
 
   .admin-topbar-actions,
