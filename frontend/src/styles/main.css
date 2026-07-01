@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --font-display: Georgia, "Times New Roman", serif;
   --ink: #18202a;
   --ink-soft: #313945;
@@ -3125,6 +3125,71 @@ img {
   box-shadow: 0 14px 30px rgba(24, 32, 42, 0.18);
 }
 
+.search-return-float {
+  position: fixed;
+  right: 1rem;
+  bottom: 4.8rem;
+  z-index: 79;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.52rem;
+  min-height: 2.82rem;
+  padding: 0.48rem 0.62rem;
+  border: 1px solid rgba(255, 250, 242, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.42);
+  color: var(--ink);
+  box-shadow: 0 14px 30px rgba(24, 32, 42, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.55rem) scale(0.96);
+  backdrop-filter: blur(14px);
+  transition: opacity 180ms ease, transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.search-return-float.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.search-return-float:hover,
+.search-return-float:focus-visible {
+  background: rgba(255, 250, 242, 0.78);
+  border-color: rgba(198, 154, 59, 0.58);
+  transform: translateY(-1px) scale(1);
+}
+
+.search-return-float span {
+  width: 1.88rem;
+  height: 1.88rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(37, 84, 73, 0.12);
+  color: var(--green);
+}
+
+.search-return-float svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.search-return-float strong {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  transition: max-width 180ms ease, opacity 180ms ease;
+}
+
+.search-return-float:hover strong,
+.search-return-float:focus-visible strong {
+  max-width: 8rem;
+  opacity: 1;
+}
 .whatsapp-float span {
   width: 2rem;
   height: 2rem;
@@ -4156,6 +4221,15 @@ img {
     bottom: 0.75rem;
     padding: 0.55rem;
   }
+  .search-return-float {
+    right: 0.75rem;
+    bottom: 4.45rem;
+    padding: 0.48rem;
+  }
+
+  .search-return-float strong {
+    display: none;
+  }
 
   .whatsapp-float strong {
     display: none;
@@ -4364,3 +4438,5 @@ img {
     padding: 0.85rem;
   }
 }
+
+
